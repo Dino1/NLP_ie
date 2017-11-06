@@ -84,7 +84,7 @@ public class Infoextract {
 				Reader reader = new StringReader(the_article);
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
-				ArrayList<Constituent> noun_phrases=new ArrayList<Constituent>();
+				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
 
 				for (List<HasWord> sentence : dp)
 					tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
@@ -92,11 +92,28 @@ public class Infoextract {
 
 				for(Tree t : tag_trees){
 					for(Tree sub: t){
-						if(sub.label().value().equals("NP")){
-							for(Word w: sub.yieldWords()){
-								System.out.print(w.word()+" ");
+						if(sub!=null){
+							if(sub.label()!=null){
+								if(sub.label().value()!=null){
+									if(sub.label().value().equals("NP")){
+										//for(Word w: sub.yieldWords()){
+											//System.out.print(w.word()+" ");
+										//}
+										Tree fuuu=sub.parent(t);
+										if(fuuu!=null){
+											//fuuu.pennPrint();
+											//System.out.print(fuuu.objectIndexOf(sub)+"  ");//this is the one we want
+											fuuu.removeChild(fuuu.objectIndexOf(sub));
+											noun_phrases.add(sub.yieldWords());
+											System.out.println(sub.yieldWords());
+											System.out.println("---------------------------------------");
+
+											//fuuu.pennPrint();
+											//sub.pennPrint();
+										}
+									}
+								}
 							}
-							System.out.println();
 						}
 					}
 				}

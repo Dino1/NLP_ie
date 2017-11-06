@@ -1,3 +1,7 @@
 Assumes all necessary jars and files are in the same directory
 javac -cp ".;./stanford-corenlp-3.8.0.jar" Infoextract.java
 java -cp ".;./stanford-corenlp-3.8.0.jar" Infoextract
+
+
+
+javac -cp ".;./stanford-corenlp-3.8.0.jar" Infoextract.java; java -cp ".;./stanford-corenlp-3.8.0.jar" Infoextract

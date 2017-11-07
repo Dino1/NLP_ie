@@ -1,6 +1,7 @@
-//package final_project;
+package final_project;//commented out because i'm not using packages atm. comment back in when running on JACOB
 
 //import Winnow;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -40,7 +41,7 @@ import edu.stanford.nlp.ling.Word;
  *
  */
 public class Infoextract {
-	private static HashMap<String, Integer> dict = null;
+	private static HashMap<String, Integer> dict=null;
 
 	public static void main(String[] args) {
 
@@ -63,7 +64,8 @@ public class Infoextract {
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
 		try {
-			input_scanner = new Scanner(new File("input.txt"));
+			input_scanner = new Scanner(new File("ANS_ALL"));
+			//input_scanner = new Scanner(new File("input.txt"));
 			writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
@@ -113,15 +115,23 @@ public class Infoextract {
 				for(Tree t : tag_trees){
 					for(Tree sub: t){
 						if(sub!=null){
-							if(sub.yieldWords().size()<=4){
-								if(sub.label()!=null){
-									if(sub.label().value()!=null){
-										if(sub.label().value().equals("NP")){
-											Tree fuuu=sub.parent(t);
-											if(fuuu!=null){
-												fuuu.removeChild(fuuu.objectIndexOf(sub));
-												noun_phrases.add(sub.yieldWords());
-											}
+							if(sub.label()!=null){
+								if(sub.label().value()!=null){
+									if(sub.label().value().equals("NP")){
+										//for(Word w: sub.yieldWords()){
+											//System.out.print(w.word()+" ");
+										//}
+										Tree fuuu=sub.parent(t);
+										if(fuuu!=null){
+											//fuuu.pennPrint();
+											//System.out.print(fuuu.objectIndexOf(sub)+"  ");//this is the one we want
+											fuuu.removeChild(fuuu.objectIndexOf(sub));
+											noun_phrases.add(sub.yieldWords());
+											System.out.println(sub.yieldWords());
+											System.out.println("---------------------------------------");
+
+											//fuuu.pennPrint();
+											//sub.pennPrint();
 										}
 									}
 								}
@@ -130,93 +140,24 @@ public class Infoextract {
 					}
 				}
 
-				Winnow weapons_winnow = new Winnow("./predict_weapon.txt");
-				Winnow individuals_winnow = new Winnow("./predict_indv.txt");
-				Winnow organizations_winnow = new Winnow("./predict_org.txt");
-				Winnow targets_winnow = new Winnow("./predict_tar.txt");
-				Winnow victims_winnow = new Winnow("./predict_vic.txt");
-
-
-				ArrayList<String> weapons = new ArrayList<String>();
-				ArrayList<String> individuals = new ArrayList<String>();
-				ArrayList<String> organizations = new ArrayList<String>();
-				ArrayList<String> targets = new ArrayList<String>();
-				ArrayList<String> victims = new ArrayList<String>();
-
-				double[] data;
-				for(ArrayList<Word> np : noun_phrases){
-					data = feature_maker(np);
-
-					String noun_phrase="";
-					for(Word w: np){
-						noun_phrase+=" "+w.word();
-					}
-					noun_phrase=noun_phrase.substring(1);
-
-					if(weapons_winnow.predict(data) == 1)
-						weapons.add(noun_phrase);
-					if(individuals_winnow.predict(data) == 1)
-						individuals.add(noun_phrase);
-					if(organizations_winnow.predict(data) == 1)
-						organizations.add(noun_phrase);
-					if(targets_winnow.predict(data) == 1)
-						targets.add(noun_phrase);
-					if(victims_winnow.predict(data) == 1)
-						victims.add(noun_phrase);
-				}
-
-				// DO SOME MAGICAL WORK TO IDENTIFY WHICH NOUN PHRASES ARE ACTUALLY DUPLICATES
-
-				// ...
-
 				// OUTPUT THE STUFFS
 				writer.println("ID:             " + ID);
 				writer.println("INCIDENT:       " + "ATTACK");
 
-				if(weapons.size() == 0)
-					writer.println("WEAPON:         " + "-");
-				for(int i = 0; i < weapons.size(); i++){
-					if(i == 0)
-						writer.println("WEAPON:         " + weapons.get(0));
-					else
-						writer.println("                " + weapons.get(i));
-				}
+				writer.println("WEAPON:         " + "ARTILLERY FIRE");
+				writer.println("                " + "EXPLOSIONS");
 
-				if(individuals.size() == 0)
-					writer.println("PERP INDIV:     " + "-");
-				for(int i = 0; i < individuals.size(); i++){
-					if(i == 0)
-						writer.println("PERP INDIV:     " + individuals.get(0));
-					else
-						writer.println("                " + individuals.get(i));
-				}
+				writer.println("PERP INDIV:     " + "-");
+				writer.println("                " + "-");
 
-				if(organizations.size() == 0)
-					writer.println("PERP ORG:       " + "-");
-				for(int i = 0; i < organizations.size(); i++){
-					if(i == 0)
-						writer.println("PERP ORG:       " + organizations.get(0));
-					else
-						writer.println("                " + organizations.get(i));
-				}
+				writer.println("PERP ORG:       " + "-");
+				writer.println("                " + "-");
 
-				if(targets.size() == 0)
-					writer.println("TARGET:         " + "-");
-				for(int i = 0; i < targets.size(); i++){
-					if(i == 0)
-						writer.println("TARGET:         " + targets.get(0));
-					else
-						writer.println("                " + targets.get(i));
-				}
+				writer.println("TARGET:         " + "-");
+				writer.println("                " + "-");
 
-				if(victims.size() == 0)
-					writer.println("VICTIM:         " + "-");
-				for(int i = 0; i < victims.size(); i++){
-					if(i == 0)
-						writer.println("VICTIM:         " + victims.get(0));
-					else
-						writer.println("                " + victims.get(i));
-				}
+				writer.println("VICTIM:         " + "-");
+				writer.println("                " + "-");
 
 				writer.println("");
 			}
@@ -225,14 +166,15 @@ public class Infoextract {
 		writer.close();
 	}
 
-	private static double[]  feature_maker(ArrayList<Word> noun_phrase){
+	private double[]  feature_maker(ArrayList<Word> noun_phrase){
 		int size_of=dict.size();
-		double[] output = new double[size_of];
+		double[] output=new double[size_of];
 		for(Word w:noun_phrase){
 			if(dict.containsKey(w.word())){
 				output[dict.get(w.word())]=1;
 			}
 		}
+		return output;
 		/*
 		for(int i=0; i<size_of; i++){
 			if(output[i]==0){
@@ -240,7 +182,5 @@ public class Infoextract {
 			}
 		}
 		*/
-
-		return output;
 	}
 }

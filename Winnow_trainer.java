@@ -1,7 +1,7 @@
 //package final_project;//commented out because i'm not using packages atm. comment back in when running on JACOB
 
 
-import Winnow;
+//import final_project.Winnow;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,10 +42,9 @@ import edu.stanford.nlp.ling.Word;
  *
  */
 public class Winnow_trainer {
-	HashMap<String, Integer> dict=null;
+	private static HashMap<String, Integer> dict=null;
 
 	public static void main(String[] args) {
-
 		try {
 			 FileInputStream in_file = new FileInputStream("./dict.ser");
 			 ObjectInputStream in = new ObjectInputStream(in_file);
@@ -59,15 +58,22 @@ public class Winnow_trainer {
 			 return;
 		}
 
+    Winnow predict_weapon=new Winnow(dict.size(), 2, .1);
+    Winnow predict_indv=new Winnow(dict.size(), 2, .1);
+    Winnow predict_org=new Winnow(dict.size(), 2, .1);
+    Winnow predict_tar=new Winnow(dict.size(), 2, .1);
+    Winnow predict_vic=new Winnow(dict.size(), 2, .1);
 
 
 		Scanner input_scanner = null;
-    Scanner answer_scanner = null;
+    Scanner ans_scanner = null;
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
 		try {
-			input_scanner = new Scanner(new File("DEV_ALL"));
-  		answer_scanner = new Scanner(new File("ANS_ALL"));
+			//input_scanner = new Scanner(new File("input.txt"));
+  		//ans_scanner = new Scanner(new File("output.txt"));
+  		input_scanner = new Scanner(new File("DEV_ALL"));
+      ans_scanner = new Scanner(new File("ANS_ALL"));
 			writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
@@ -99,11 +105,12 @@ public class Winnow_trainer {
 
 			if(!the_article.equals("")){
         String ans_id="";//0
-        String ans_weapon="";//1
-        String ans_indv="";//2
-        String ans_org="";//3
-        String ans_tar="";//4
-        String ans_vic="";//5
+        String ans_inc="";//1
+        ArrayList<String[]> ans_weapon=new ArrayList<String[]>();//2
+        ArrayList<String[]> ans_indv=new ArrayList<String[]>();//3
+        ArrayList<String[]> ans_org=new ArrayList<String[]>();//4
+        ArrayList<String[]> ans_tar=new ArrayList<String[]>();//5
+        ArrayList<String[]> ans_vic=new ArrayList<String[]>();//6
         boolean ans_found=false;
         boolean ans_done=false;
         int ans_count=0;
@@ -116,27 +123,58 @@ public class Winnow_trainer {
 
 
         while(ans_scanner.hasNextLine() &&! ans_done){
-    				String next_line = input_scanner.nextLine();
-
+    				String next_line = ans_scanner.nextLine();
+            String[] things;
             if(ans_found){
-              if(nextLine.charAt(0)!=" "){
-                ans_count++;
+              if(next_line.trim().length()==0){
+                ans_done=true;
               }
-              switch(ans_count){
-                case 1:
-                      break;
-                case 2:
-                      break;
-                case 3:
-                      break;
-                case 4:
-                      break;
-                case 5:
-                      break;
-                default:
-                      break;
+              else{
+                if(next_line.charAt(0)!=' '){
+                  ans_count++;
+                }
+                String consider=next_line.substring(16);
+                switch(ans_count){
+                  case 1:
+                        ans_inc=consider;
+                        break;
+                  case 2:
+                        things=consider.split("/");
+                        for(int counter=0; counter<things.length; counter++){
+                          ans_weapon.add((things[counter]).split(" "));
+                        }
+                        break;
+                  case 3:
+                        things=consider.split("/");
+                        for(int counter=0; counter<things.length; counter++){
+                          ans_indv.add((things[counter]).split(" "));
+                        }
+                        break;
+                  case 4:
+                        things=consider.split("/");
+                        for(int counter=0; counter<things.length; counter++){
+                          ans_org.add((things[counter]).split(" "));
+                        }
+                        break;
+                  case 5:
+                        things=consider.split("/");
+                        for(int counter=0; counter<things.length; counter++){
+                          ans_tar.add((things[counter]).split(" "));
+                        }
+                        break;
+                  case 6:
+                        things=consider.split("/");
+                        for(int counter=0; counter<things.length; counter++){
+                          ans_vic.add((things[counter]).split(" "));
+                        }
+                        break;
+                  default:
+                        ans_done=true;
+                        break;
 
+                }
               }
+
             }
             else{
               if(ID.equals(next_line.substring(16))){
@@ -156,74 +194,210 @@ public class Winnow_trainer {
 					tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
 
 
-				for(Tree t : tag_trees){
-					for(Tree sub: t){
-						if(sub!=null){
-							if(sub.label()!=null){
-								if(sub.label().value()!=null){
-									if(sub.label().value().equals("NP")){
-										//for(Word w: sub.yieldWords()){
-											//System.out.print(w.word()+" ");
-										//}
-										Tree fuuu=sub.parent(t);
-										if(fuuu!=null){
-											//fuuu.pennPrint();
-											//System.out.print(fuuu.objectIndexOf(sub)+"  ");//this is the one we want
-											fuuu.removeChild(fuuu.objectIndexOf(sub));
-											noun_phrases.add(sub.yieldWords());
-											System.out.println(sub.yieldWords());
-											System.out.println("---------------------------------------");
-
-											//fuuu.pennPrint();
-											//sub.pennPrint();
+					for(Tree t : tag_trees){
+						for(Tree sub: t){
+							if(sub!=null){
+								if(sub.yieldWords().size()<=4){
+									if(sub.label()!=null){
+										if(sub.label().value()!=null){
+											if(sub.label().value().equals("NP")){
+												Tree fuuu=sub.parent(t);
+												if(fuuu!=null){
+													fuuu.removeChild(fuuu.objectIndexOf(sub));
+													noun_phrases.add(sub.yieldWords());
+												}
+											}
 										}
 									}
 								}
 							}
 						}
 					}
+					/*
+				for(String[] ans: ans_indv){
+					for(String fuck: ans){
+						System.out.print(fuck+" ");
+					}
+					System.out.println();
 				}
+				System.out.println("--------------------");
+				System.out.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+				*/
+        for(ArrayList<Word> np: noun_phrases){
+					/*
+					for(Word w: np){
+						System.out.print(w+" ");
+					}
+					System.out.println();
+					*/
+          boolean matches=false;
+          double data[]=feature_maker(np);
+          for(String[] ans: ans_weapon){
+            if(ans.length==np.size()){
+              for(int count=0; count<ans.length; count++){
+                if(ans[count].equals( (np.get(count)).word() )){
+                  matches=true;
+                }
+                else{
+                  matches=false;
+                  break;
+                }
+              }
+              if(matches){
+                break;
+              }
+            }
+          }
+          if(matches){
+            predict_weapon.learn(data, 1);
+          }
+          else{
+            predict_weapon.learn(data, -1);
+          }
+          matches=false;
+          for(String[] ans: ans_indv){
+            if(ans.length==np.size()){
+              for(int count=0; count<ans.length; count++){
+                if(ans[count].equals( (np.get(count)).word() )){
+                  matches=true;
+                }
+                else{
+                  matches=false;
+                  break;
+                }
+              }
+              if(matches){
+                break;
+              }
+            }
+          }
+          if(matches){
+            //System.out.println("fuck you bernie");
+            predict_indv.learn(data, 1);
+          }
+          else{
+            //System.out.println("wow you found me. good for you asshole");
+            predict_indv.learn(data, -1);
+          }
+          matches=false;
+          for(String[] ans: ans_org){
+            if(ans.length==np.size()){
+              for(int count=0; count<ans.length; count++){
+                if(ans[count].equals( (np.get(count)).word() )){
+                  matches=true;
+                }
+                else{
+                  matches=false;
+                  break;
+                }
+              }
+              if(matches){
+                break;
+              }
+            }
+          }
+          if(matches){
+            predict_org.learn(data, 1);
+          }
+          else{
+            predict_org.learn(data, -1);
+          }
+          matches=false;
+          for(String[] ans: ans_tar){
+            if(ans.length==np.size()){
+              for(int count=0; count<ans.length; count++){
+                if(ans[count].equals( (np.get(count)).word() )){
+                  matches=true;
+                }
+                else{
+                  matches=false;
+                  break;
+                }
+              }
+              if(matches){
+                break;
+              }
+            }
+          }
+          if(matches){
+            predict_tar.learn(data, 1);
+          }
+          else{
+            predict_tar.learn(data, -1);
+          }
+          matches=false;
+          for(String[] ans: ans_vic){
+            if(ans.length==np.size()){
+              for(int count=0; count<ans.length; count++){
+                if(ans[count].equals( (np.get(count)).word() )){
+                  matches=true;
+                }
+                else{
+                  matches=false;
+                  break;
+                }
+              }
+              if(matches){
+                break;
+              }
+            }
+          }
+          if(matches){
+            predict_vic.learn(data, 1);
+          }
+          else{
+            predict_vic.learn(data, -1);
+          }
+          matches=false;
+          for(String[] ans: ans_tar){
+            if(ans.length==np.size()){
+              for(int count=0; count<ans.length; count++){
+                if(ans[count].equals( (np.get(count)).word() )){
+                  matches=true;
+                }
+                else{
+                  matches=false;
+                  break;
+                }
+              }
+              if(matches){
+                break;
+              }
+            }
+          }
+          if(matches){
+            predict_tar.learn(data, 1);
+          }
+          else{
+            predict_tar.learn(data, -1);
+          }
+        }
 
-				// OUTPUT THE STUFFS
-				writer.println("ID:             " + ID);
-				writer.println("INCIDENT:       " + "ATTACK");
-
-				writer.println("WEAPON:         " + "ARTILLERY FIRE");
-				writer.println("                " + "EXPLOSIONS");
-
-				writer.println("PERP INDIV:     " + "-");
-				writer.println("                " + "-");
-
-				writer.println("PERP ORG:       " + "-");
-				writer.println("                " + "-");
-
-				writer.println("TARGET:         " + "-");
-				writer.println("                " + "-");
-
-				writer.println("VICTIM:         " + "-");
-				writer.println("                " + "-");
-
-				writer.println("");
 			}
 		}
+    predict_weapon.save_to("predict_weapon.txt");
+    predict_indv.save_to("predict_indv.txt");
+    predict_org.save_to("predict_org.txt");
+    predict_vic.save_to("predict_vic.txt");
+    predict_tar.save_to("predict_tar.txt");
 
-		writer.close();
 	}
 
-	private double[]  feature_maker(ArrayList<Word> noun_phrase){
-		int size_of=dict.size();
-		double[] output=[size_of];
-		for(Word w:noun_phrase){
-			if(dict.containsKey(w.word())){
-				output[dict.get(w.word())]=1;
-			}
-		}
-		/*
-		for(int i=0; i<size_of; i++){
-			if(output[i]==0){
-				output[i+size_of]=1;
-			}
-		}
-		*/
-	}
+  private static double[]  feature_maker(ArrayList<Word> noun_phrase){
+    int size_of=dict.size();
+    double[] output=new double[size_of];
+    for(Word w:noun_phrase){
+      if(dict.containsKey(w.word())){
+        output[dict.get(w.word())]=1;
+      }
+    }
+    return output;
+    /*
+    for(int i=0; i<size_of; i++){
+      if(output[i]==0){
+        output[i+size_of]=1;
+      }
+    }
+    */
+  }
 }

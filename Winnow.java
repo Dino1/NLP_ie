@@ -18,18 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.HasWord;
-import edu.stanford.nlp.ling.SentenceUtils;
-import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
-import edu.stanford.nlp.parser.shiftreduce.ShiftReduceParser;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.DocumentPreprocessor;
-import edu.stanford.nlp.process.PTBTokenizer;
-import edu.stanford.nlp.tagger.maxent.MaxentTagger;
-import edu.stanford.nlp.trees.Constituent;
-import edu.stanford.nlp.trees.Tree;
-import edu.stanford.nlp.ling.Word;
 
 /**
  * CS 5340
@@ -45,6 +33,7 @@ public class Winnow {
   private double l_r_;
   public Winnow(int size_of_data, double learning_rate, double margin){
     //initialize for training
+    weights_=new double[size_of_data];
     for(int count=0; count<size_of_data; ++count){
       weights_[count]=1;
     }
@@ -58,19 +47,19 @@ public class Winnow {
 			Scanner input_scanner = new Scanner(new File(file_name));
 
 		  String next_line = input_scanner.nextLine();
-      size_of_=Integer.parseInt(nextLine);
+      size_of_=Integer.parseInt(next_line);
 
       next_line = input_scanner.nextLine();
-      margin_=Double.parseDouble(nextLine);
+      margin_=Double.parseDouble(next_line);
 
       next_line = input_scanner.nextLine();
-      l_r_=Double.parseDouble(nextLine);
+      l_r_=Double.parseDouble(next_line);
 
-      weights_=[size_of_];
+      weights_=new double[size_of_];
       int count=0;
       while(input_scanner.hasNextLine()){
         next_line = input_scanner.nextLine();
-        weights_[count]=Double.parseDouble(nextLine);
+        weights_[count]=Double.parseDouble(next_line);
         count++;
 			}
 		}
@@ -95,19 +84,19 @@ public class Winnow {
     for(int ind=0; ind<size_of_; ind++){
       val+=(weights_[ind]-1/weights_[ind])*(data[ind]);
     }
-    if(val<size_of_){
+    if(val<margin_){//changed size_of_ to margin_ here
       return 0;//because of data set reasons.
     }
     return 1;
   }
   public int learn(double[] data, int label){
     double val=0;
-    for(uint32_t ind=0; ind<size_of_; ind++){
+    for(int ind=0; ind<size_of_; ind++){
       val+=(weights_[ind]-1/weights_[ind])*(data[ind]);
     }
-    if((val<size_of_)&&label==1){
+    if((val<margin_)&&label==1){
       //need to increas val which means doubling shit in w
-      for(uint32_t count{0}; count<size_of_; ++count){
+      for(int count=0; count<size_of_; ++count){
         if(data[count]!=0){
           weights_[count]=l_r_*weights_[count];
         }
@@ -115,7 +104,7 @@ public class Winnow {
       return 1;
     }
     else if((val>=size_of_)&&label==-1){
-      for(uint32_t count{0}; count<size_of_; ++count){
+      for(int count=0; count<size_of_; ++count){
         if(data[count]!=0){
           weights_[count]=weights_[count]/l_r_;
         }

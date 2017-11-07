@@ -12,8 +12,11 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
@@ -36,8 +39,24 @@ import edu.stanford.nlp.ling.Word;
  *
  */
 public class Infoextract {
+	HashMap<String, Integer> dict=null;
 
 	public static void main(String[] args) {
+
+		try {
+			 FileInputStream in_file = new FileInputStream("./dict.ser");
+			 ObjectInputStream in = new ObjectInputStream(in_file);
+			 dict = (HashMap<String, Integer>) in.readObject();
+			 in.close();
+			 in_file.close();
+		} catch (IOException e) {
+			 e.printStackTrace();
+			 return;
+		} catch (ClassNotFoundException e) {
+			 return;
+		}
+
+
 
 		Scanner input_scanner = null;
 		PrintWriter  writer = null;
@@ -143,12 +162,21 @@ public class Infoextract {
 
 		writer.close();
 	}
-/*
-	private int[]  feature_maker(ArrayList<Tree> tag_trees){
-		tag_trees
-	}
-	public static Predicate<Tree>(){
 
+	private double[]  feature_maker(ArrayList<Word> noun_phrase){
+		int size_of=dict.size();
+		double[] output=[size_of];
+		for(Word w:noun_phrase){
+			if(dict.containsKey(w.word())){
+				output[dict.get(w.word())]=1;
+			}
+		}
+		/*
+		for(int i=0; i<size_of; i++){
+			if(output[i]==0){
+				output[i+size_of]=1;
+			}
+		}
+		*/
 	}
-	*/
 }

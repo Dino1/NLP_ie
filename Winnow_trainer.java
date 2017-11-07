@@ -1,5 +1,6 @@
 //package final_project;//commented out because i'm not using packages atm. comment back in when running on JACOB
 
+
 import Winnow;
 
 import java.io.File;
@@ -40,7 +41,7 @@ import edu.stanford.nlp.ling.Word;
  * @author Jacob Luke and Bernard Serbinowski
  *
  */
-public class Infoextract {
+public class Winnow_trainer {
 	HashMap<String, Integer> dict=null;
 
 	public static void main(String[] args) {
@@ -61,10 +62,12 @@ public class Infoextract {
 
 
 		Scanner input_scanner = null;
+    Scanner answer_scanner = null;
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
 		try {
-			input_scanner = new Scanner(new File("input.txt"));
+			input_scanner = new Scanner(new File("DEV_ALL"));
+  		answer_scanner = new Scanner(new File("ANS_ALL"));
 			writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
@@ -95,11 +98,53 @@ public class Infoextract {
 				done_with_stuff = true;
 
 			if(!the_article.equals("")){
+        String ans_id="";//0
+        String ans_weapon="";//1
+        String ans_indv="";//2
+        String ans_org="";//3
+        String ans_tar="";//4
+        String ans_vic="";//5
+        boolean ans_found=false;
+        boolean ans_done=false;
+        int ans_count=0;
 
 				// GET THE ID
 				String ID = current_article_name.substring(0, 14);
-				if(ID.charAt(0) == 'D')
+				if(ID.charAt(0) == 'D'){
 					ID = ID.substring(0, 13);
+        }
+
+
+        while(ans_scanner.hasNextLine() &&! ans_done){
+    				String next_line = input_scanner.nextLine();
+
+            if(ans_found){
+              if(nextLine.charAt(0)!=" "){
+                ans_count++;
+              }
+              switch(ans_count){
+                case 1:
+                      break;
+                case 2:
+                      break;
+                case 3:
+                      break;
+                case 4:
+                      break;
+                case 5:
+                      break;
+                default:
+                      break;
+
+              }
+            }
+            else{
+              if(ID.equals(next_line.substring(16))){
+                ans_id=ID;
+                ans_found=true;
+              }
+            }
+    		}
 
 				// SPLIT THE ARTICLE INTO SENTENCES
 				Reader reader = new StringReader(the_article);

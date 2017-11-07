@@ -77,10 +77,10 @@ public class Winnow_trainer {
 		ArrayList<ArrayList<String[]> > art_ans_tar=new ArrayList<ArrayList<String[]> >();//5
 		ArrayList<ArrayList<String[]> > art_ans_vic=new ArrayList<ArrayList<String[]> >();//6
 		try {
-			input_scanner = new Scanner(new File("input.txt"));
-  		ans_scanner = new Scanner(new File("output.txt"));
-  		//input_scanner = new Scanner(new File("DEV_ALL"));
-      //ans_scanner = new Scanner(new File("ANS_ALL"));
+			//input_scanner = new Scanner(new File("input.txt"));
+  		//ans_scanner = new Scanner(new File("output.txt"));
+  		input_scanner = new Scanner(new File("DEV_ALL"));
+      ans_scanner = new Scanner(new File("ANS_ALL"));
 			writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}

@@ -58,11 +58,11 @@ public class Winnow_trainer {
 			 return;
 		}
 
-    Winnow predict_weapon=new Winnow(dict.size(), 2, .1);
-    Winnow predict_indv=new Winnow(dict.size(), 2, .1);
-    Winnow predict_org=new Winnow(dict.size(), 2, .1);
-    Winnow predict_tar=new Winnow(dict.size(), 2, .1);
-    Winnow predict_vic=new Winnow(dict.size(), 2, .1);
+    Winnow predict_weapon=new Winnow(dict.size(), 2, 7);
+    Winnow predict_indv=new Winnow(dict.size(), 2, 7);
+    Winnow predict_org=new Winnow(dict.size(), 2, 7);
+    Winnow predict_tar=new Winnow(dict.size(), 2, 7);
+    Winnow predict_vic=new Winnow(dict.size(), 2, 7);
 
 
 		Scanner input_scanner = null;
@@ -107,8 +107,10 @@ public class Winnow_trainer {
 				else
 					the_article += next_line;
 			}
-			if(!next_article_found)
+			if(!next_article_found){
 				done_with_stuff = true;
+				current_article_name = next_article_name;
+			}
 
 			if(!the_article.equals("")){
         String ans_id="";//0
@@ -127,6 +129,7 @@ public class Winnow_trainer {
 				if(ID.charAt(0) == 'D'){
 					ID = ID.substring(0, 13);
         }
+				System.out.println(ID);
 
 
         while(ans_scanner.hasNextLine() &&! ans_done){
@@ -226,35 +229,23 @@ public class Winnow_trainer {
 				art_ans_org.add(ans_org);
 				art_ans_tar.add(ans_tar);
 				art_ans_vic.add(ans_vic);
-				/*
-				System.out.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
-				for(String[] ws: ans_org){
-					for(String s: ws){
-						System.out.print(s+" ");
-
-					}
-					System.out.println("");
-				}
-				System.out.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
-				*/
 				for(ArrayList<Word> np: noun_phrases){
-					/*
-					for(Word w: np){
-						System.out.print(w.word()+" ");
-					}
-					System.out.println();
-					*/
 					boolean matches=false;
 					double data[]=feature_maker(np);
 					for(String[] ans: ans_weapon){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -270,14 +261,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_indv){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -295,14 +291,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_org){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -318,14 +319,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_tar){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -341,14 +347,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_vic){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -361,29 +372,6 @@ public class Winnow_trainer {
 					}
 					else{
 						predict_vic.learn(data, -1);
-					}
-					matches=false;
-					for(String[] ans: ans_tar){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
-								}
-							}
-							if(matches){
-								break;
-							}
-						}
-					}
-					if(matches){
-						predict_tar.learn(data, 1);
-					}
-					else{
-						predict_tar.learn(data, -1);
 					}
 				}
 				/*
@@ -550,25 +538,23 @@ public class Winnow_trainer {
 				ArrayList<String[]> ans_tar=art_ans_tar.get(sub_count);//5
 				ArrayList<String[]> ans_vic=art_ans_vic.get(sub_count);//6
 
-
 				for(ArrayList<Word> np: noun_phrases){
-					/*
-					for(Word w: np){
-						System.out.print(w+" ");
-					}
-					System.out.println();
-					*/
 					boolean matches=false;
 					double data[]=feature_maker(np);
 					for(String[] ans: ans_weapon){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -584,14 +570,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_indv){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -609,14 +600,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_org){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -632,14 +628,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_tar){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -655,14 +656,19 @@ public class Winnow_trainer {
 					}
 					matches=false;
 					for(String[] ans: ans_vic){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
+						for(int count1=0; count1<ans.length; count1++){
+							if((ans[count1]).equals("THE")||(ans[count1]).equals("OF")||(ans[count1]).equals("A")||(ans[count1]).equals("IN")||(ans[count1].trim().length()==0)||(ans[count1]).equals("-")||(ans[count1]).equals("")){
+							}
+							else{
+								//System.out.println(ans[count1]+";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+								for(int count2=0; count2<np.size(); count2++){
+									String temp=np.get(count2).word();
+									if( ((temp.contains(ans[count1])) || ((ans[count1].contains(temp)))) && ( Math.abs(temp.length()-ans[count1].length())<=2) ){
+										//System.out.println(temp);
+										//System.out.println(ans[count1]);
+										matches=true;
+										break;
+									}
 								}
 							}
 							if(matches){
@@ -675,29 +681,6 @@ public class Winnow_trainer {
 					}
 					else{
 						predict_vic.learn(data, -1);
-					}
-					matches=false;
-					for(String[] ans: ans_tar){
-						if(ans.length==np.size()){
-							for(int count=0; count<ans.length; count++){
-								if(ans[count].equals( (np.get(count)).word() )){
-									matches=true;
-								}
-								else{
-									matches=false;
-									break;
-								}
-							}
-							if(matches){
-								break;
-							}
-						}
-					}
-					if(matches){
-						predict_tar.learn(data, 1);
-					}
-					else{
-						predict_tar.learn(data, -1);
 					}
 				}
 			}

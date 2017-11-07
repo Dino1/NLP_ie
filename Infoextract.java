@@ -91,8 +91,10 @@ public class Infoextract {
 				else
 					the_article += next_line;
 			}
-			if(!next_article_found)
+			if(!next_article_found){
 				done_with_stuff = true;
+				current_article_name = next_article_name;
+			}
 
 			if(!the_article.equals("")){
 

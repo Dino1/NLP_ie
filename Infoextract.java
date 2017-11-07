@@ -61,11 +61,11 @@ public class Infoextract {
 
 		Scanner input_scanner = null;
 		PrintWriter  writer = null;
-		//try {input_scanner = new Scanner(new File(args[0]));}
 		try {
-			input_scanner = new Scanner(new File("DEV_ALL"));
+			input_scanner = new Scanner(new File(args[0]));
+			//input_scanner = new Scanner(new File("DEV_ALL"));
 			//input_scanner = new Scanner(new File("input.txt"));
-			writer = new PrintWriter("input.txt.template");
+			writer = new PrintWriter(args[0] + ".template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
 
@@ -133,11 +133,11 @@ public class Infoextract {
 					}
 				}
 
-				Winnow weapons_winnow = new Winnow("./predict_weapon.txt");
-				Winnow individuals_winnow = new Winnow("./predict_indv.txt");
-				Winnow organizations_winnow = new Winnow("./predict_org.txt");
-				Winnow targets_winnow = new Winnow("./predict_tar.txt");
-				Winnow victims_winnow = new Winnow("./predict_vic.txt");
+				Winnow weapons_winnow = new Winnow("./predictors/predict_weapon.txt");
+				Winnow individuals_winnow = new Winnow("./predictors/predict_indv.txt");
+				Winnow organizations_winnow = new Winnow("./predictors/predict_org.txt");
+				Winnow targets_winnow = new Winnow("./predictors/predict_tar.txt");
+				Winnow victims_winnow = new Winnow("./predictors/predict_vic.txt");
 
 
 				ArrayList<String> weapons = new ArrayList<String>();
@@ -226,6 +226,8 @@ public class Infoextract {
 		}
 
 		writer.close();
+
+		System.out.println("Finished.");
 	}
 
 	private static double[]  feature_maker(ArrayList<Word> noun_phrase){

@@ -685,11 +685,11 @@ public class Winnow_trainer {
 				}
 			}
 		}
-    predict_weapon.save_to("predict_weapon.txt");
-    predict_indv.save_to("predict_indv.txt");
-    predict_org.save_to("predict_org.txt");
-    predict_vic.save_to("predict_vic.txt");
-    predict_tar.save_to("predict_tar.txt");
+    predict_weapon.save_to("./predictors/predict_weapon.txt");
+    predict_indv.save_to("./predictors/predict_indv.txt");
+    predict_org.save_to("./predictors/predict_org.txt");
+    predict_vic.save_to("./predictors/predict_vic.txt");
+    predict_tar.save_to("./predictors/predict_tar.txt");
 
 	}
 

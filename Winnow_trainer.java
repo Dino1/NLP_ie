@@ -69,11 +69,18 @@ public class Winnow_trainer {
     Scanner ans_scanner = null;
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
+
+		ArrayList<ArrayList<ArrayList <Word> > > articles=new ArrayList<ArrayList<ArrayList<Word > > >();
+		ArrayList<ArrayList<String[]> > art_ans_weapon=new ArrayList<ArrayList<String[]> >();//2
+		ArrayList<ArrayList<String[]> > art_ans_indv=new ArrayList<ArrayList<String[]> >();//3
+		ArrayList<ArrayList<String[]> > art_ans_org=new ArrayList<ArrayList<String[]> >();//4
+		ArrayList<ArrayList<String[]> > art_ans_tar=new ArrayList<ArrayList<String[]> >();//5
+		ArrayList<ArrayList<String[]> > art_ans_vic=new ArrayList<ArrayList<String[]> >();//6
 		try {
-			//input_scanner = new Scanner(new File("input.txt"));
-  		//ans_scanner = new Scanner(new File("output.txt"));
-  		input_scanner = new Scanner(new File("DEV_ALL"));
-      ans_scanner = new Scanner(new File("ANS_ALL"));
+			input_scanner = new Scanner(new File("input.txt"));
+  		ans_scanner = new Scanner(new File("output.txt"));
+  		//input_scanner = new Scanner(new File("DEV_ALL"));
+      //ans_scanner = new Scanner(new File("ANS_ALL"));
 			writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
@@ -213,23 +220,180 @@ public class Winnow_trainer {
 							}
 						}
 					}
-					/*
-				for(String[] ans: ans_indv){
-					for(String fuck: ans){
-						System.out.print(fuck+" ");
+				articles.add(noun_phrases);
+				art_ans_weapon.add(ans_weapon);
+				art_ans_indv.add(ans_indv);
+				art_ans_org.add(ans_org);
+				art_ans_tar.add(ans_tar);
+				art_ans_vic.add(ans_vic);
+				/*
+				System.out.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+				for(String[] ws: ans_org){
+					for(String s: ws){
+						System.out.print(s+" ");
+
 					}
-					System.out.println();
+					System.out.println("");
 				}
-				System.out.println("--------------------");
-				System.out.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+				System.out.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
 				*/
-        for(ArrayList<Word> np: noun_phrases){
+				for(ArrayList<Word> np: noun_phrases){
 					/*
 					for(Word w: np){
-						System.out.print(w+" ");
+						System.out.print(w.word()+" ");
 					}
 					System.out.println();
 					*/
+					boolean matches=false;
+					double data[]=feature_maker(np);
+					for(String[] ans: ans_weapon){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_weapon.learn(data, 1);
+					}
+					else{
+						predict_weapon.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_indv){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						//System.out.println("fuck you bernie");
+						predict_indv.learn(data, 1);
+					}
+					else{
+						//System.out.println("wow you found me. good for you asshole");
+						predict_indv.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_org){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_org.learn(data, 1);
+					}
+					else{
+						predict_org.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_tar){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_tar.learn(data, 1);
+					}
+					else{
+						predict_tar.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_vic){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_vic.learn(data, 1);
+					}
+					else{
+						predict_vic.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_tar){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_tar.learn(data, 1);
+					}
+					else{
+						predict_tar.learn(data, -1);
+					}
+				}
+				/*
+        for(ArrayList<Word> np: noun_phrases){
+
+					for(Word w: np){
+						System.out.print(w.word()+" ");
+					}
+					System.out.println();
+
           boolean matches=false;
           double data[]=feature_maker(np);
           for(String[] ans: ans_weapon){
@@ -372,7 +536,170 @@ public class Winnow_trainer {
             predict_tar.learn(data, -1);
           }
         }
+				*/
+			}
+		}
 
+
+		for(int count_outter=0; count_outter<5; count_outter++){
+			for(int sub_count=0; sub_count<articles.size(); sub_count++){
+				ArrayList<ArrayList<Word>> noun_phrases=articles.get(sub_count);
+				ArrayList<String[]> ans_weapon=art_ans_weapon.get(sub_count);//2
+				ArrayList<String[]> ans_indv=art_ans_indv.get(sub_count);//3
+				ArrayList<String[]> ans_org=art_ans_org.get(sub_count);//4
+				ArrayList<String[]> ans_tar=art_ans_tar.get(sub_count);//5
+				ArrayList<String[]> ans_vic=art_ans_vic.get(sub_count);//6
+
+
+				for(ArrayList<Word> np: noun_phrases){
+					/*
+					for(Word w: np){
+						System.out.print(w+" ");
+					}
+					System.out.println();
+					*/
+					boolean matches=false;
+					double data[]=feature_maker(np);
+					for(String[] ans: ans_weapon){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_weapon.learn(data, 1);
+					}
+					else{
+						predict_weapon.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_indv){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						//System.out.println("fuck you bernie");
+						predict_indv.learn(data, 1);
+					}
+					else{
+						//System.out.println("wow you found me. good for you asshole");
+						predict_indv.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_org){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_org.learn(data, 1);
+					}
+					else{
+						predict_org.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_tar){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_tar.learn(data, 1);
+					}
+					else{
+						predict_tar.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_vic){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_vic.learn(data, 1);
+					}
+					else{
+						predict_vic.learn(data, -1);
+					}
+					matches=false;
+					for(String[] ans: ans_tar){
+						if(ans.length==np.size()){
+							for(int count=0; count<ans.length; count++){
+								if(ans[count].equals( (np.get(count)).word() )){
+									matches=true;
+								}
+								else{
+									matches=false;
+									break;
+								}
+							}
+							if(matches){
+								break;
+							}
+						}
+					}
+					if(matches){
+						predict_tar.learn(data, 1);
+					}
+					else{
+						predict_tar.learn(data, -1);
+					}
+				}
 			}
 		}
     predict_weapon.save_to("predict_weapon.txt");

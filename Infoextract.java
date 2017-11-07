@@ -63,8 +63,8 @@ public class Infoextract {
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
 		try {
-			//input_scanner = new Scanner(new File("DEV_ALL"));
-			input_scanner = new Scanner(new File("input.txt"));
+			input_scanner = new Scanner(new File("DEV_ALL"));
+			//input_scanner = new Scanner(new File("input.txt"));
 			writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}

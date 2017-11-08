@@ -22,9 +22,9 @@ NLP Projct Midpoint Evaluation
 4.	Well, the main breakthrough at this point is having all these libraries and systems working together. Our predictions aren't too 	accurate. For incidents, we're always predicting "attack" which seems to work in a majority of cases, but we'll obviously work on 	better solutions in the future. We're also only using winnows at this point with fairly basic feature vectors but we plan to integrate 	other ML algorithms to use on our system.
 
 
-The script "run_project.bat" should compile and run the code just fine. 
-All you need to do is open run_project.bat and change the name of the input file after the infoextract run command
+The script infoextract should run the program for you. The console command should be formatted as:
+./infoextract Input.txt
 
-The other batch file, "run_winnow_trainer.bat" shouldn't be run
+The batch files "run_project.bat" and "run_winnow_trainer.bat" are for our benefit for developing on non-linux systems and shouldn't be run
 
 	

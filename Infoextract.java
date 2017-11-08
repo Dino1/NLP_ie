@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.Arrays;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
@@ -112,6 +113,7 @@ public class Infoextract {
 				for (List<HasWord> sentence : dp)
 					tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
 
+				ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("THIS","AND", "THE", "OF", "A", "IN", "", "-"));
 
 				for(Tree t : tag_trees){
 					for(Tree sub: t){
@@ -122,8 +124,14 @@ public class Infoextract {
 										if(sub.label().value().equals("NP")){
 											Tree fuuu=sub.parent(t);
 											if(fuuu!=null){
+												ArrayList<Word> add_words = sub.yieldWords();
 												fuuu.removeChild(fuuu.objectIndexOf(sub));
-												noun_phrases.add(sub.yieldWords());
+												if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0))){
+												}
+												else{
+													if(!noun_phrases.contains(add_words))
+														noun_phrases.add(sub.yieldWords());
+												}
 											}
 										}
 									}
@@ -138,7 +146,6 @@ public class Infoextract {
 				Winnow organizations_winnow = new Winnow("./predictors/predict_org.txt");
 				Winnow targets_winnow = new Winnow("./predictors/predict_tar.txt");
 				Winnow victims_winnow = new Winnow("./predictors/predict_vic.txt");
-
 
 				ArrayList<String> weapons = new ArrayList<String>();
 				ArrayList<String> individuals = new ArrayList<String>();

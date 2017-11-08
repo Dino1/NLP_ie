@@ -1,34 +1,5 @@
-Assumes all necessary jars and files are in the same directory
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 javac -cp ".;./stanford-corenlp-3.8.0.jar" Feature_set.java
 java -cp ".;./stanford-corenlp-3.8.0.jar" Feature_set
 javac -cp ".;./stanford-corenlp-3.8.0.jar" Winnow_trainer.java
 java -cp ".;./stanford-corenlp-3.8.0.jar" Winnow_trainer
-javac -cp ".;./stanford-corenlp-3.8.0.jar" Infoextract.java
-java -cp ".;./stanford-corenlp-3.8.0.jar" Infoextract
 echo potato
-
-
-
-
-
-
-
-
-
-
-
-

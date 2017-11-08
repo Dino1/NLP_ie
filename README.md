@@ -25,4 +25,6 @@ NLP Projct Midpoint Evaluation
 The script "run_project.bat" should compile and run the code just fine. 
 All you need to do is open run_project.bat and change the name of the input file after the infoextract run command
 
+The other batch file, "run_winnow_trainer.bat" shouldn't be run
+
 	

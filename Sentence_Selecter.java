@@ -43,7 +43,7 @@ import edu.stanford.nlp.ling.Word;
  */
 
 
-public class Freq_tuple {
+class Freq_tuple {
 	public int numerator;
 	public int denominator;
 
@@ -51,9 +51,19 @@ public class Freq_tuple {
 		numerator=n;
 		denominator=d;
 	}
+	public void inc_both(){
+		numerator++;
+		denominator++;
+	}
+	public void inc_de(){
+		denominator++;
+	}
+	public Double get_doub(){
+		return ((double)(numerator))/((double)(denominator));
+	}
 }
 
-public class Winnow_trainer {
+public class Sentence_Selecter {
 	private static HashMap<String, Integer> dict=null;
 
 	private static HashMap<String, Freq_tuple> freq_weapon=new HashMap<>();
@@ -81,12 +91,14 @@ public class Winnow_trainer {
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
 
+/*
 		ArrayList<ArrayList<ArrayList <Word> > > articles=new ArrayList<ArrayList<ArrayList<Word > > >();
 		ArrayList<ArrayList<String[]> > art_ans_weapon=new ArrayList<ArrayList<String[]> >();//2
 		ArrayList<ArrayList<String[]> > art_ans_indv=new ArrayList<ArrayList<String[]> >();//3
 		ArrayList<ArrayList<String[]> > art_ans_org=new ArrayList<ArrayList<String[]> >();//4
 		ArrayList<ArrayList<String[]> > art_ans_tar=new ArrayList<ArrayList<String[]> >();//5
 		ArrayList<ArrayList<String[]> > art_ans_vic=new ArrayList<ArrayList<String[]> >();//6
+		*/
 		try {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
@@ -211,34 +223,77 @@ public class Winnow_trainer {
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
 
-				for (List<HasWord> sentence : dp)
-					tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
+				for (List<HasWord> sentence : dp){
+					update_freq_count(freq_weapon, sentence, ans_weapon);
+					update_freq_count(freq_vic, sentence, ans_vic);
+					update_freq_count(freq_tar, sentence, ans_tar);
+					update_freq_count(freq_org, sentence, ans_org);
+					update_freq_count(freq_indv, sentence, ans_indv);
+				}
 
-
-					for(Tree t : tag_trees){
-						for(Tree sub: t){
-							if(sub!=null){
-								if(sub.yieldWords().size()<=4){
-									if(sub.label()!=null){
-										if(sub.label().value()!=null){
-											if(sub.label().value().equals("NP")){
-												Tree fuuu=sub.parent(t);
-												if(fuuu!=null){
-													fuuu.removeChild(fuuu.objectIndexOf(sub));
-													noun_phrases.add(sub.yieldWords());
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					//k time to do freq stuff here.
 
 			}
 		}
+
+		//SAVE ALL THE THINGS
+		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon);
+		HashMap<String, Double> prob_vic=terrible_converter(freq_vic);
+		HashMap<String, Double> prob_tar=terrible_converter(freq_tar);
+		HashMap<String, Double> prob_org=terrible_converter(freq_org);
+		HashMap<String, Double> prob_indv=terrible_converter(freq_indv);
+    try {
+      FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_weapon.ser");
+      ObjectOutputStream out = new ObjectOutputStream(fileOut);
+      out.writeObject(prob_weapon);
+      out.close();
+      fileOut.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+		try {
+      FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_vic.ser");
+      ObjectOutputStream out = new ObjectOutputStream(fileOut);
+      out.writeObject(prob_vic);
+      out.close();
+      fileOut.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+		try {
+			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_tar.ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(prob_tar);
+			out.close();
+			fileOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_org.ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(prob_org);
+			out.close();
+			fileOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_indv.ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(prob_indv);
+			out.close();
+			fileOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static HashMap<String, Double> terrible_converter(HashMap<String, Freq_tuple> input ){
+		HashMap<String, Double> prob=new HashMap<>();
+		for(String s: input.keySet()){
+			prob.put(s, input.get(s).get_doub());
+		}
+		return prob;
 	}
 
   private static double[]  feature_maker(ArrayList<Word> noun_phrase){
@@ -258,4 +313,49 @@ public class Winnow_trainer {
     }
     */
   }
+
+	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans){
+		boolean seq_found=false;
+		int index_in_seq=0;
+		for(HasWord word: sentence){
+			if(ans.get(index_in_seq).equals(word.word())){
+				index_in_seq=index_in_seq+1;
+				if(index_in_seq>=ans.size()){
+						seq_found=true;
+						break;
+				}
+			}
+			else if(ans.get(0).equals(word.word())){
+				index_in_seq=1;
+				if(index_in_seq>=ans.size()){
+						seq_found=true;
+						break;
+				}
+			}
+			else{
+				index_in_seq=0;
+			}
+		}
+		if(seq_found){
+			for(HasWord word: sentence){
+				if(freq_weapon.containsKey(word.word())){
+					freq_weapon.get(word.word()).inc_both();
+				}
+				else{
+					freq_weapon.put(word.word(), new Freq_tuple(1, 11));
+				}
+			}
+		}
+		else{
+			for(HasWord word: sentence){
+				if(freq_weapon.containsKey(word.word())){
+					freq_weapon.get(word.word()).inc_de();
+				}
+				else{
+					freq_weapon.put(word.word(), new Freq_tuple(0, 11));
+				}
+			}
+		}
+	}
+
 }

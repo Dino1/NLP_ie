@@ -129,8 +129,11 @@ public class Infoextract {
 												if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0))){
 												}
 												else{
-													if(!noun_phrases.contains(add_words))
-														noun_phrases.add(sub.yieldWords());
+													if(!noun_phrases.contains(add_words)){
+                                                        if(add_words.get(0).word().equals("THE"))
+                                                            add_words.remove(0);                    
+                                                        noun_phrases.add(add_words);
+                                                    }
 												}
 											}
 										}

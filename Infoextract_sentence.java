@@ -41,45 +41,54 @@ import edu.stanford.nlp.ling.Word;
  * @author Jacob Luke and Bernard Serbinowski
  *
  */
-
-
-class Freq_tuple {
-	public int numerator;
-	public int denominator;
-
-	public Freq_tuple(int n, int d){
-		numerator=n;
-		denominator=d;
-	}
-	public void inc_both(){
-		numerator++;
-		denominator++;
-	}
-	public void inc_de(){
-		denominator=denominator+10;
-	}
-	public Double get_doub(){
-		//System.out.println(numerator+"  "+denominator+ " "+((double)(numerator))/((double)(denominator)));
-		return ((double)(numerator))/((double)(denominator));
-	}
-}
-
-public class Sentence_Selecter {
+public class Infoextract_sentence {
 	private static HashMap<String, Integer> dict=null;
-
-	private static HashMap<String, Freq_tuple> freq_weapon=new HashMap<>();
-	private static HashMap<String, Freq_tuple> freq_indv=new HashMap<>();
-	private static HashMap<String, Freq_tuple> freq_org=new HashMap<>();
-	private static HashMap<String, Freq_tuple> freq_tar=new HashMap<>();
-	private static HashMap<String, Freq_tuple> freq_vic=new HashMap<>();
+  private static int hits=0;
+  private static int tries=0;
 
 	public static void main(String[] args) {
+    HashMap<String, Double> prob_weap=null;
+    HashMap<String, Double> prob_tar=null;
+    HashMap<String, Double> prob_vic=null;
+    HashMap<String, Double> prob_org=null;
+    HashMap<String, Double> prob_indv=null;
 		try {
 			 FileInputStream in_file = new FileInputStream("./dict.ser");
 			 ObjectInputStream in = new ObjectInputStream(in_file);
 			 dict = (HashMap<String, Integer>) in.readObject();
 			 in.close();
 			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs/prob_indv.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_indv = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs/prob_org.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_org = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs/prob_weapon.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_weap = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs/prob_tar.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_tar = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs/prob_vic.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_vic = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
 		} catch (IOException e) {
 			 e.printStackTrace();
 			 return;
@@ -92,14 +101,6 @@ public class Sentence_Selecter {
 		PrintWriter  writer = null;
 		//try {input_scanner = new Scanner(new File(args[0]));}
 
-/*
-		ArrayList<ArrayList<ArrayList <Word> > > articles=new ArrayList<ArrayList<ArrayList<Word > > >();
-		ArrayList<ArrayList<String[]> > art_ans_weapon=new ArrayList<ArrayList<String[]> >();//2
-		ArrayList<ArrayList<String[]> > art_ans_indv=new ArrayList<ArrayList<String[]> >();//3
-		ArrayList<ArrayList<String[]> > art_ans_org=new ArrayList<ArrayList<String[]> >();//4
-		ArrayList<ArrayList<String[]> > art_ans_tar=new ArrayList<ArrayList<String[]> >();//5
-		ArrayList<ArrayList<String[]> > art_ans_vic=new ArrayList<ArrayList<String[]> >();//6
-		*/
 		try {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
@@ -221,81 +222,33 @@ public class Sentence_Selecter {
 				// SPLIT THE ARTICLE INTO SENTENCES
 				Reader reader = new StringReader(the_article);
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
-				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
 
+        List<HasWord> best_sentence=null;
+        double best_val=0;
+
 				for (List<HasWord> sentence : dp){
-					update_freq_count(freq_weapon, sentence, ans_weapon);
-					update_freq_count(freq_vic, sentence, ans_vic);
-					update_freq_count(freq_tar, sentence, ans_tar);
-					update_freq_count(freq_org, sentence, ans_org);
-					update_freq_count(freq_indv, sentence, ans_indv);
-				}
-
-
+          double cur_best=0;
+          for (HasWord word: sentence){
+            if(prob_tar.containsKey(word.word())){
+              if(cur_best<prob_tar.get(word.word())){
+                cur_best=prob_tar.get(word.word());
+              }
+            }
+          }
+          if(best_val<cur_best){
+            best_val=cur_best;
+            best_sentence=sentence;
+          }
+        }
+        update_hit_count(best_sentence, ans_tar);
+        //
 			}
 		}
+    System.out.println("hits: "+hits);
+    System.out.println("tries: "+tries);
 
-		//SAVE ALL THE THINGS
-		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon);
-		HashMap<String, Double> prob_vic=terrible_converter(freq_vic);
-		HashMap<String, Double> prob_tar=terrible_converter(freq_tar);
-		HashMap<String, Double> prob_org=terrible_converter(freq_org);
-		HashMap<String, Double> prob_indv=terrible_converter(freq_indv);
-    try {
-      FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_weapon.ser");
-      ObjectOutputStream out = new ObjectOutputStream(fileOut);
-      out.writeObject(prob_weapon);
-      out.close();
-      fileOut.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-		try {
-      FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_vic.ser");
-      ObjectOutputStream out = new ObjectOutputStream(fileOut);
-      out.writeObject(prob_vic);
-      out.close();
-      fileOut.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-		try {
-			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_tar.ser");
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(prob_tar);
-			out.close();
-			fileOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_org.ser");
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(prob_org);
-			out.close();
-			fileOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_indv.ser");
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(prob_indv);
-			out.close();
-			fileOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
-	private static HashMap<String, Double> terrible_converter(HashMap<String, Freq_tuple> input ){
-		HashMap<String, Double> prob=new HashMap<>();
-		for(String s: input.keySet()){
-			prob.put(s, input.get(s).get_doub());
-		}
-		//System.out.println(prob.size()+"   "+input.size());
-		return prob;
 	}
 
   private static double[]  feature_maker(ArrayList<Word> noun_phrase){
@@ -307,59 +260,39 @@ public class Sentence_Selecter {
       }
     }
     return output;
-    /*
-    for(int i=0; i<size_of; i++){
-      if(output[i]==0){
-        output[i+size_of]=1;
-      }
-    }
-    */
   }
 
-	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
-		for(String[] ans: ans_){
-			boolean seq_found=false;
-			int index_in_seq=0;
-			for(HasWord word: sentence){
-				if(ans[index_in_seq].equals(word.word())){
-					index_in_seq=index_in_seq+1;
-					if(index_in_seq>=ans.length){
-							seq_found=true;
-							break;
-					}
-				}
-				else if(ans[0].equals(word.word())){
-					index_in_seq=1;
-					if(index_in_seq>=ans.length){
-							seq_found=true;
-							break;
-					}
-				}
-				else{
-					index_in_seq=0;
-				}
-			}
-			if(seq_found){
-				for(HasWord word: sentence){
-					if(freq.containsKey(word.word())){
-						freq.get(word.word()).inc_both();
-					}
-					else{
-						freq.put(word.word(), new Freq_tuple(1, 11));
-					}
-				}
-			}
-			else{
-				for(HasWord word: sentence){
-					if(freq.containsKey(word.word())){
-						freq.get(word.word()).inc_de();
-					}
-					else{
-						freq.put(word.word(), new Freq_tuple(0, 11));
-					}
-				}
-			}
+	private static void update_hit_count(List<HasWord> sentence, ArrayList<String[]> ans_){
+		boolean seq_found=false;
+    for(String[] ans: ans_){
+  		int index_in_seq=0;
+  		for(HasWord word: sentence){
+  			if(ans[index_in_seq].equals(word.word())){
+  				index_in_seq=index_in_seq+1;
+  				if(index_in_seq>=ans.length){
+  						seq_found=true;
+  						break;
+  				}
+  			}
+  			else if(ans[0].equals(word.word())){
+  				index_in_seq=1;
+  				if(index_in_seq>=ans.length){
+  						seq_found=true;
+  						break;
+  				}
+  			}
+  			else{
+  				index_in_seq=0;
+  			}
+  		}
+    }
+
+		if(seq_found){
+			hits++;
+      tries++;
+		}
+		else{
+			tries++;
 		}
 	}
-
 }

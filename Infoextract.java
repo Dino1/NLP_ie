@@ -20,6 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.TrueCaseAnnotator;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.SentenceUtils;
@@ -71,9 +73,9 @@ public class Infoextract {
 		catch (FileNotFoundException e) {e.printStackTrace();}
 
 		MaxentTagger tagger = new MaxentTagger("./english-left3words-distsim.tagger");
-		//LexicalizedParser parsnip = LexicalizedParser.loadModel();
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
-
+        TrueCaseAnnotator caser = new TrueCaseAnnotator("./truecasing.fast.caseless.qn.ser.gz", TrueCaseAnnotator.DEFAULT_MODEL_BIAS, "./MixDisambiguation.list" , false, false);
+        
 		// Go through all articles
 		String next_article_name = "";
 		String current_article_name = "";
@@ -105,7 +107,9 @@ public class Infoextract {
 					ID = ID.substring(0, 13);
 
 				// SPLIT THE ARTICLE INTO SENTENCES
-				Reader reader = new StringReader(the_article);
+                Annotation article_with_case = new Annotation(the_article.toLowerCase());
+                //caser.annotate(article_with_case);
+				Reader reader = new StringReader(article_with_case.toString());
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
@@ -126,11 +130,11 @@ public class Infoextract {
 											if(fuuu!=null){
 												ArrayList<Word> add_words = sub.yieldWords();
 												fuuu.removeChild(fuuu.objectIndexOf(sub));
-												if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0))){
+												if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0).word().toUpperCase())){
 												}
 												else{
 													if(!noun_phrases.contains(add_words)){
-                                                        if(add_words.get(0).word().equals("THE"))
+                                                        if(add_words.get(0).word().toUpperCase().equals("THE"))
                                                             add_words.remove(0);                    
                                                         noun_phrases.add(add_words);
                                                     }
@@ -162,7 +166,7 @@ public class Infoextract {
 
 					String noun_phrase="";
 					for(Word w: np){
-						noun_phrase+=" "+w.word();
+						noun_phrase+=" "+w.word().toUpperCase();
 					}
 					noun_phrase=noun_phrase.substring(1);
 

@@ -162,16 +162,37 @@ public class Infoextract_V2 {
 
 				for (List<HasWord> sentence : dp){
 					double cur_best=0;
+					HasWord temp_debug=null;
+					double cur_count=0;
+					double neg_mod=(.5)/((double)sentence.size());
 					for (HasWord word: sentence){
-						if(prob_vic.containsKey(word.word())){
-							if(cur_best<prob_vic.get(word.word())){
-								cur_best=prob_vic.get(word.word());
+						//System.out.println(word.word());
+						if(prob_vic.containsKey(word.word().toUpperCase())){
+							if(cur_best<prob_vic.get(word.word().toUpperCase())){
+								cur_best=prob_vic.get(word.word().toUpperCase());
+								temp_debug=word;
+							}
+							if(prob_vic.get(word.word().toUpperCase())>.015){
+								cur_count=cur_count+prob_vic.get(word.word().toUpperCase())*10;
+							}
+							else{
+								cur_count=cur_count-neg_mod;
 							}
 						}
 					}
 					if(best_val<cur_best){
+						//System.out.println(cur_best);
+						//System.out.println(temp_debug.word());
 						best_val=cur_best;
 						best_sentence=sentence;
+					}
+
+					if(cur_count>0){
+						System.out.println(cur_count);
+						for(HasWord word: sentence){
+							System.out.print(word.word()+" ");
+						}
+						System.out.println();
 					}
 					tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
 				}
@@ -351,8 +372,8 @@ public class Infoextract_V2 {
 		int size_of=dict.size();
 		double[] output = new double[size_of];
 		for(Word w:noun_phrase){
-			if(dict.containsKey(w.word())){
-				output[dict.get(w.word())]=1;
+			if(dict.containsKey(w.word().toUpperCase())){
+				output[dict.get(w.word().toUpperCase())]=1;
 			}
 		}
 		/*

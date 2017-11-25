@@ -38,6 +38,9 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.parser.nndep.DependencyParser;
 import edu.stanford.nlp.trees.GrammaticalStructure;
 import edu.stanford.nlp.trees.TypedDependency;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.*;
+import edu.stanford.nlp.ling.CoreAnnotations;
 
 /**
  * CS 5340
@@ -62,6 +65,7 @@ public class Infoextract_V3 {
 						//Winnow targets_winnow = new Winnow("./predictors/predict_tar.txt");
 						//Winnow victims_winnow = new Winnow("./predictors/predict_vic.txt");
 
+						AbstractSequenceClassifier<CoreLabel> classifier = null;
 		try {
 			 FileInputStream in_file = new FileInputStream("./dict.ser");
 			 ObjectInputStream in = new ObjectInputStream(in_file);
@@ -99,6 +103,7 @@ public class Infoextract_V3 {
 			 in.close();
 			 in_file.close();
 
+			 classifier=CRFClassifier.getClassifier("./english.all.3class.distsim.crf.ser.gz");
 		} catch (IOException e) {
 			 e.printStackTrace();
 			 return;
@@ -123,6 +128,7 @@ public class Infoextract_V3 {
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
     TrueCaseAnnotator caser = new TrueCaseAnnotator("./truecasing.fast.caseless.qn.ser.gz", TrueCaseAnnotator.DEFAULT_MODEL_BIAS, "./MixDisambiguation.list" , false, false);
 		DependencyParser depend= DependencyParser.loadFromModelFile("english_SD.gz");
+
 
 		// Go through all articles
 		String next_article_name = "";
@@ -162,9 +168,10 @@ public class Infoextract_V3 {
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
 
-				List<HasWord> best_sentence=null;
+				List<List<HasWord>> best_sentences=new List<List<HasWord>>();
+				//List<HasWord> best_sentence=null;
 				double best_val=0;
-
+				String rel_sentences="";
 				for (List<HasWord> sentence : dp){
 					double cur_best=0;
 					HasWord temp_debug=null;
@@ -173,10 +180,12 @@ public class Infoextract_V3 {
 					for (HasWord word: sentence){
 						//System.out.println(word.word());
 						if(prob_vic.containsKey(word.word().toUpperCase())){
+							/*
 							if(cur_best<prob_vic.get(word.word().toUpperCase())){
 								cur_best=prob_vic.get(word.word().toUpperCase());
 								temp_debug=word;
 							}
+							*/
 							if(prob_vic.get(word.word().toUpperCase())>.015){
 								cur_count=cur_count+prob_vic.get(word.word().toUpperCase())*10;
 							}
@@ -185,12 +194,14 @@ public class Infoextract_V3 {
 							}
 						}
 					}
+					/*
 					if(best_val<cur_best){
 						//System.out.println(cur_best);
 						//System.out.println(temp_debug.word());
 						best_val=cur_best;
 						best_sentence=sentence;
 					}
+					*/
 					if(cur_count>0){
 						/*
 						System.out.println(cur_count);
@@ -199,13 +210,22 @@ public class Infoextract_V3 {
 						}
 						System.out.println();
 						*/
+						best_sentences.add(sentence);
+						for(HasWord word: sentence){
+							rel_sentences=rel_sentences+" "+word.word();
+						}
 						tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
 					}
 					//tag_trees.add(parsnip.apply(tagger.tagSentence(sentence)));
 				}
-				for(HasWord w: best_sentence){
-					System.out.println(w.word());
-				}
+
+	      List<List<CoreLabel>> out = classifier.classify(rel_sentences);
+	      for (List<CoreLabel> sentence : out) {
+	        for (CoreLabel word : sentence) {
+	          System.out.print(word.word() + '/' + word.get(CoreAnnotations.AnswerAnnotation.class) + ' ');
+	        }
+	        System.out.println();
+	      }
 				GrammaticalStructure g=depend.predict(tagger.tagSentence(best_sentence));
 				Collection<TypedDependency> typed=g.allTypedDependencies();
 				for(TypedDependency t: typed){

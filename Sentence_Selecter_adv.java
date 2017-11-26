@@ -64,6 +64,9 @@ class Freq_tuple {
 		if(numerator<15){
 			return 0.0;
 		}
+		if(((double)(numerator))/((double)(denominator))<.1){
+			return 0.0;
+		}
 		return ((double)(numerator))/((double)(denominator));
 	}
 }
@@ -322,7 +325,7 @@ public class Sentence_Selecter_adv {
 
 	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
 
-		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("BY", "IS", "AS", "AT", "ON", "TO", "THIS","AND", "THE", "OF", "A", "IN", "", "-", "-LSB-", "-RSB-", "-RRB-", "-LRB-", "", ",", ";", ".", "'S", "--", "``"));
+		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("TWO", "FIVE", "SIX", "BY", "IS", "AS", "AT", "ON", "TO", "THIS","AND", "THE", "OF", "A", "IN", "", "-", "-LSB-", "-RSB-", "-RRB-", "-LRB-", "", ",", ";", ".", "'S", "--", "``"));
 		for(String[] ans: ans_){
 			boolean seq_found=false;
 			int index_in_seq=0;
@@ -372,15 +375,15 @@ public class Sentence_Selecter_adv {
 				*/
 				index=-1;
 				for(HasWord word: sentence){
-
+					index++;
 
 					if(ignore_words.contains(word.word())){
 
 					}
 					else{
-						index++;
+						//index++;
 
-						if(index<=ans_start_loc && (index+5)>=ans_start_loc){
+						if(index<=ans_start_loc && (index+4)>=ans_start_loc){
 							if(freq.containsKey(word.word())){
 								freq.get(word.word()).inc_both();
 							}
@@ -388,7 +391,7 @@ public class Sentence_Selecter_adv {
 								freq.put(word.word(), new Freq_tuple(1, 1));
 							}
 						}
-						else if(index>=ans_end_loc && (index-5)<=ans_end_loc){
+						else if(index>=ans_end_loc && (index-4)<=ans_end_loc){
 							if(freq.containsKey(word.word())){
 								freq.get(word.word()).inc_both();
 							}

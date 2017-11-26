@@ -62,7 +62,7 @@ class Freq_tuple {
 	}
 	public Double get_doub(){
 		//System.out.println(numerator+"  "+denominator+ " "+((double)(numerator))/((double)(denominator)));
-		if(numerator<15){
+		if(numerator<40){
 			return 0.0;
 		}
 		return ((double)(numerator))/((double)(denominator));

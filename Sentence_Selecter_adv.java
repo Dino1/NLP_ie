@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Arrays;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
@@ -56,10 +57,13 @@ class Freq_tuple {
 		denominator++;
 	}
 	public void inc_de(){
-		denominator=denominator+10;
+		denominator=denominator+1;
 	}
 	public Double get_doub(){
 		//System.out.println(numerator+"  "+denominator+ " "+((double)(numerator))/((double)(denominator)));
+		if(numerator<15){
+			return 0.0;
+		}
 		return ((double)(numerator))/((double)(denominator));
 	}
 }
@@ -153,7 +157,7 @@ public class Sentence_Selecter_adv {
 				if(ID.charAt(0) == 'D'){
 					ID = ID.substring(0, 13);
         }
-				System.out.println(ID);
+				//System.out.println(ID);
 
 
         while(ans_scanner.hasNextLine() &&! ans_done){
@@ -317,6 +321,8 @@ public class Sentence_Selecter_adv {
   }
 
 	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
+
+		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("BY", "IS", "AS", "AT", "ON", "TO", "THIS","AND", "THE", "OF", "A", "IN", "", "-", "-LSB-", "-RSB-", "-RRB-", "-LRB-", "", ",", ";", ".", "'S", "--", "``"));
 		for(String[] ans: ans_){
 			boolean seq_found=false;
 			int index_in_seq=0;
@@ -352,32 +358,54 @@ public class Sentence_Selecter_adv {
 			}
 			index=-1;
 			if(seq_found){
+				/*
 				for(HasWord word: sentence){
 					index++;
-					if(index<=ans_start_loc && (index+3)>=ans_start_loc){
-						if(freq.containsKey(word.word())){
-							freq.get(word.word()).inc_both();
-						}
-						else{
-							freq.put(word.word(), new Freq_tuple(1, 11));
+					if(index<ans_start_loc){
+						if(ignore_words.contains(word.word())){
+							index--;
+							ans_start_loc--;
+							ans_end_loc--;
 						}
 					}
-					else if(index>=ans_end_loc && (index-3)<=ans_end_loc){
-						if(freq.containsKey(word.word())){
-							freq.get(word.word()).inc_both();
-						}
-						else{
-							freq.put(word.word(), new Freq_tuple(1, 11));
-						}
+				}
+				*/
+				index=-1;
+				for(HasWord word: sentence){
+
+
+					if(ignore_words.contains(word.word())){
+
 					}
 					else{
-						if(freq.containsKey(word.word())){
-							freq.get(word.word()).inc_de();
+						index++;
+
+						if(index<=ans_start_loc && (index+5)>=ans_start_loc){
+							if(freq.containsKey(word.word())){
+								freq.get(word.word()).inc_both();
+							}
+							else{
+								freq.put(word.word(), new Freq_tuple(1, 1));
+							}
+						}
+						else if(index>=ans_end_loc && (index-5)<=ans_end_loc){
+							if(freq.containsKey(word.word())){
+								freq.get(word.word()).inc_both();
+							}
+							else{
+								freq.put(word.word(), new Freq_tuple(1, 1));
+							}
 						}
 						else{
-							freq.put(word.word(), new Freq_tuple(0, 11));
+							if(freq.containsKey(word.word())){
+								freq.get(word.word()).inc_de();
+							}
+							else{
+								freq.put(word.word(), new Freq_tuple(0, 1));
+							}
 						}
 					}
+
 				}
 			}
 			else{
@@ -386,7 +414,7 @@ public class Sentence_Selecter_adv {
 						freq.get(word.word()).inc_de();
 					}
 					else{
-						freq.put(word.word(), new Freq_tuple(0, 11));
+						freq.put(word.word(), new Freq_tuple(0, 1));
 					}
 				}
 			}

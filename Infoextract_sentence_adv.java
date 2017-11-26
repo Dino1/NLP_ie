@@ -95,7 +95,11 @@ public class Infoextract_sentence_adv {
 		} catch (ClassNotFoundException e) {
 			 return;
 		}
-
+		for(String s: prob_vic.keySet()){
+			if(prob_vic.get(s)>0){
+				System.out.println(s+";;;;;"+prob_vic.get(s));
+			}
+		}
 		Scanner input_scanner = null;
     Scanner ans_scanner = null;
 		PrintWriter  writer = null;
@@ -104,8 +108,10 @@ public class Infoextract_sentence_adv {
 		try {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
-  		input_scanner = new Scanner(new File("DEV_ALL"));
-      ans_scanner = new Scanner(new File("ANS_ALL"));
+  		//input_scanner = new Scanner(new File("DEV_ALL"));
+      //ans_scanner = new Scanner(new File("ANS_ALL"));
+  		input_scanner = new Scanner(new File("testset1-input.txt"));
+      ans_scanner = new Scanner(new File("testset1-anskeys.txt"));
 			//writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
@@ -154,7 +160,7 @@ public class Infoextract_sentence_adv {
 				if(ID.charAt(0) == 'D'){
 					ID = ID.substring(0, 13);
         }
-				System.out.println(ID);
+				//System.out.println(ID);
 
 
         while(ans_scanner.hasNextLine() &&! ans_done){
@@ -263,6 +269,13 @@ public class Infoextract_sentence_adv {
   }
 
 	private static void update_hit_count(List<HasWord> sentence, ArrayList<String[]> ans_){
+		if(sentence==null){
+			if(ans_.equals("-")){
+				hits++;
+			}
+			tries++;
+			return;
+		}
 		boolean seq_found=false;
     for(String[] ans: ans_){
   		int index_in_seq=0;

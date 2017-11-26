@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Collection;
+import java.util.Collections;
 
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.TrueCaseAnnotator;
@@ -57,6 +58,13 @@ public class Infoextract_V3 {
   private static HashMap<String, Double> prob_org=null;
   private static HashMap<String, Double> prob_indv=null;
 
+	private static HashMap<String, Double> term_weap=null;
+  private static HashMap<String, Double> term_tar=null;
+  private static HashMap<String, Double> term_vic=null;
+  private static HashMap<String, Double> term_org=null;
+  private static HashMap<String, Double> term_indv=null;
+
+
 	public static void main(String[] args) {
 
 						//Winnow weapons_winnow = new Winnow("./predictors/predict_weapon.txt");
@@ -73,33 +81,63 @@ public class Infoextract_V3 {
 			 in.close();
 			 in_file.close();
 
-       in_file = new FileInputStream("./sentence_probs/prob_indv.ser");
+       in_file = new FileInputStream("./sentence_probs_adv/prob_indv_adv.ser");
 			 in = new ObjectInputStream(in_file);
 			 prob_indv = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
 
-       in_file = new FileInputStream("./sentence_probs/prob_org.ser");
+       in_file = new FileInputStream("./sentence_probs_adv/prob_org_adv.ser");
 			 in = new ObjectInputStream(in_file);
 			 prob_org = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
 
-       in_file = new FileInputStream("./sentence_probs/prob_weapon.ser");
+       in_file = new FileInputStream("./sentence_probs_adv/prob_weapon_adv.ser");
 			 in = new ObjectInputStream(in_file);
 			 prob_weap = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
 
-       in_file = new FileInputStream("./sentence_probs/prob_tar.ser");
+       in_file = new FileInputStream("./sentence_probs_adv/prob_tar_adv.ser");
 			 in = new ObjectInputStream(in_file);
 			 prob_tar = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
 
-       in_file = new FileInputStream("./sentence_probs/prob_vic.ser");
+       in_file = new FileInputStream("./sentence_probs_adv/prob_vic_adv.ser");
 			 in = new ObjectInputStream(in_file);
 			 prob_vic = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+			 in_file = new FileInputStream("./term_terms_adv/term_indv_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_indv = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./term_terms_adv/term_org_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_org = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./term_terms_adv/term_weapon_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_weap = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./term_terms_adv/term_tar_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_tar = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./term_terms_adv/term_vic_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_vic = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
 
@@ -110,6 +148,20 @@ public class Infoextract_V3 {
 		} catch (ClassNotFoundException e) {
 			 return;
 		}
+		List<Double> l = new ArrayList<Double>(prob_vic.values());
+		Collections.sort(l);
+		/*
+		for(Double d: l){
+			System.out.println(d);
+		}
+		*/
+		for(String s: prob_vic.keySet()){
+			if(prob_vic.get(s)>.09){
+				System.out.println(s);
+			}
+		}
+		double top_in=0;
+		//double top_adj=temp.sort();
 
 
 
@@ -127,7 +179,7 @@ public class Infoextract_V3 {
 		MaxentTagger tagger = new MaxentTagger("./english-left3words-distsim.tagger");
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
     TrueCaseAnnotator caser = new TrueCaseAnnotator("./truecasing.fast.caseless.qn.ser.gz", TrueCaseAnnotator.DEFAULT_MODEL_BIAS, "./MixDisambiguation.list" , false, false);
-		DependencyParser depend= DependencyParser.loadFromModelFile("english_SD.gz");
+		//DependencyParser depend= DependencyParser.loadFromModelFile("english_SD.gz");
 
 
 		// Go through all articles
@@ -168,7 +220,7 @@ public class Infoextract_V3 {
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
 
-				List<List<HasWord>> best_sentences=new List<List<HasWord>>();
+				//List<List<HasWord>> best_sentences=new List<List<HasWord>>();
 				//List<HasWord> best_sentence=null;
 				double best_val=0;
 				String rel_sentences="";
@@ -210,7 +262,7 @@ public class Infoextract_V3 {
 						}
 						System.out.println();
 						*/
-						best_sentences.add(sentence);
+						//best_sentences.add(sentence);
 						for(HasWord word: sentence){
 							rel_sentences=rel_sentences+" "+word.word();
 						}
@@ -226,13 +278,14 @@ public class Infoextract_V3 {
 	        }
 	        System.out.println();
 	      }
+				/*
 				GrammaticalStructure g=depend.predict(tagger.tagSentence(best_sentence));
 				Collection<TypedDependency> typed=g.allTypedDependencies();
 				for(TypedDependency t: typed){
 					System.out.println(t.toString());
 				}
 				Tree victim_tree=(parsnip.apply(tagger.tagSentence(best_sentence)));
-
+				*/
 				ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("THIS","AND", "THE", "OF", "A", "IN", "", "-"));
 
 				for(Tree t : tag_trees){

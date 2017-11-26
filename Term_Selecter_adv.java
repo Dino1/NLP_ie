@@ -3,7 +3,6 @@
 
 //import final_project.Winnow;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -21,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Arrays;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
@@ -58,18 +56,15 @@ class Freq_tuple {
 		denominator++;
 	}
 	public void inc_de(){
-		denominator=denominator+1;
+		denominator=denominator+10;
 	}
 	public Double get_doub(){
 		//System.out.println(numerator+"  "+denominator+ " "+((double)(numerator))/((double)(denominator)));
-		if(numerator<15){
-			return 0.0;
-		}
 		return ((double)(numerator))/((double)(denominator));
 	}
 }
 
-public class Sentence_Selecter {
+public class Term_Selecter_adv {
 	private static HashMap<String, Integer> dict=null;
 
 	private static HashMap<String, Freq_tuple> freq_weapon=new HashMap<>();
@@ -158,7 +153,7 @@ public class Sentence_Selecter {
 				if(ID.charAt(0) == 'D'){
 					ID = ID.substring(0, 13);
         }
-				//System.out.println(ID);
+				System.out.println(ID);
 
 
         while(ans_scanner.hasNextLine() &&! ans_done){
@@ -248,7 +243,7 @@ public class Sentence_Selecter {
 		HashMap<String, Double> prob_org=terrible_converter(freq_org);
 		HashMap<String, Double> prob_indv=terrible_converter(freq_indv);
     try {
-      FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_weapon.ser");
+      FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_weapon_adv.ser");
       ObjectOutputStream out = new ObjectOutputStream(fileOut);
       out.writeObject(prob_weapon);
       out.close();
@@ -257,7 +252,7 @@ public class Sentence_Selecter {
       e.printStackTrace();
     }
 		try {
-      FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_vic.ser");
+      FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_vic_adv.ser");
       ObjectOutputStream out = new ObjectOutputStream(fileOut);
       out.writeObject(prob_vic);
       out.close();
@@ -266,7 +261,7 @@ public class Sentence_Selecter {
       e.printStackTrace();
     }
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_tar.ser");
+			FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_tar_adv.ser");
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(prob_tar);
 			out.close();
@@ -275,7 +270,7 @@ public class Sentence_Selecter {
 			e.printStackTrace();
 		}
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_org.ser");
+			FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_org_adv.ser");
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(prob_org);
 			out.close();
@@ -284,7 +279,7 @@ public class Sentence_Selecter {
 			e.printStackTrace();
 		}
 		try {
-			FileOutputStream fileOut = new FileOutputStream("./sentence_probs/prob_indv.ser");
+			FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_indv_adv.ser");
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(prob_indv);
 			out.close();
@@ -322,73 +317,72 @@ public class Sentence_Selecter {
   }
 
 	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
-
-				ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("BY", "IS", "AS", "AT", "ON", "TO", "THIS","AND", "THE", "OF", "A", "IN", "", "-", "-LSB-", "-RSB-", "-RRB-", "-LRB-", "", ",", ";", ".", "'S", "--", "``"));
-				for(String[] ans: ans_){
-					boolean seq_found=false;
-					int index_in_seq=0;
-					int ans_start_loc=-1;
-					int ans_end_loc=-1;
-					int index=-1;
-					for(HasWord word: sentence){
-						index++;
-						if(ans[index_in_seq].equals(word.word())){
-							if(ans_start_loc==-1){
-								ans_start_loc=index;
-							}
-							index_in_seq=index_in_seq+1;
-							if(index_in_seq>=ans.length){
-								ans_end_loc=index;
-									seq_found=true;
-									break;
-							}
-						}
-						else if(ans[0].equals(word.word())){
-							ans_start_loc=index;
-							index_in_seq=1;
-							if(index_in_seq>=ans.length){
-								ans_end_loc=index;
-									seq_found=true;
-									break;
-							}
+		for(String[] ans: ans_){
+			boolean seq_found=false;
+			int index_in_seq=0;
+			int ans_start_loc=-1;
+			int ans_end_loc=-1;
+			int index=-1;
+			for(HasWord word: sentence){
+				index++;
+				if(ans[index_in_seq].equals(word.word())){
+					if(ans_start_loc==-1){
+						ans_start_loc=index;
+					}
+					index_in_seq=index_in_seq+1;
+					if(index_in_seq>=ans.length){
+						ans_end_loc=index;
+							seq_found=true;
+							break;
+					}
+				}
+				else if(ans[0].equals(word.word())){
+					ans_start_loc=index;
+					index_in_seq=1;
+					if(index_in_seq>=ans.length){
+						ans_end_loc=index;
+							seq_found=true;
+							break;
+					}
+				}
+				else{
+					ans_start_loc=-1;
+					index_in_seq=0;
+				}
+			}
+			index=-1;
+			if(seq_found){
+				for(HasWord word: sentence){
+					index++;
+					if(index<=ans_end_loc && index>=ans_start_loc){
+						if(freq.containsKey(word.word())){
+							freq.get(word.word()).inc_both();
 						}
 						else{
-							ans_start_loc=-1;
-							index_in_seq=0;
-						}
-					}
-					index=-1;
-					if(seq_found){
-						index=-1;
-						for(HasWord word: sentence){
-
-
-							if(ignore_words.contains(word.word())){
-
-							}
-							else{
-								index++;
-								if(freq.containsKey(word.word())){
-									freq.get(word.word()).inc_both();
-								}
-								else{
-									freq.put(word.word(), new Freq_tuple(1, 1));
-								}
-							}
-
+							freq.put(word.word(), new Freq_tuple(1, 11));
 						}
 					}
 					else{
-						for(HasWord word: sentence){
-							if(freq.containsKey(word.word())){
-								freq.get(word.word()).inc_de();
-							}
-							else{
-								freq.put(word.word(), new Freq_tuple(0, 1));
-							}
+						if(freq.containsKey(word.word())){
+							freq.get(word.word()).inc_de();
+						}
+						else{
+							freq.put(word.word(), new Freq_tuple(0, 11));
 						}
 					}
 				}
+			}
+			else{
+				for(HasWord word: sentence){
+					if(freq.containsKey(word.word())){
+						freq.get(word.word()).inc_de();
+					}
+					else{
+						freq.put(word.word(), new Freq_tuple(0, 11));
+					}
+				}
+			}
+		}
 	}
 
 }

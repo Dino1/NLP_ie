@@ -20,8 +20,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 
+import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.SentenceUtils;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
@@ -33,6 +37,12 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.trees.Constituent;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.parser.nndep.DependencyParser;
+import edu.stanford.nlp.trees.GrammaticalStructure;
+import edu.stanford.nlp.trees.TypedDependency;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.*;
+import edu.stanford.nlp.ling.CoreAnnotations;
 
 
 class Freq_tuple {
@@ -64,6 +74,12 @@ class Freq_tuple {
 		}
 		return ((double)(numerator))/((double)(denominator));
 	}
+	public boolean worthless(){
+		if((numerator*2)<denominator){
+			return true;
+		}
+		return false;
+	}
 }
 /**
  * CS 5340
@@ -83,7 +99,11 @@ public class Infoextract_sentence_adv {
   private static int hits=0;
   private static int tries=0;
 
-	private static HashMap<String, Freq_tuple> freq=new HashMap<String, Freq_tuple>();
+	private static HashMap<String, Freq_tuple> freq_vic=new HashMap<String, Freq_tuple>();
+	private static HashMap<String, Freq_tuple> freq_tar=new HashMap<String, Freq_tuple>();
+	private static HashMap<String, Freq_tuple> freq_indv=new HashMap<String, Freq_tuple>();
+	private static HashMap<String, Freq_tuple> freq_org=new HashMap<String, Freq_tuple>();
+	private static HashMap<String, Freq_tuple> freq_weap=new HashMap<String, Freq_tuple>();
 
 
 	public static void main(String[] args) {
@@ -130,9 +150,39 @@ public class Infoextract_sentence_adv {
 		} catch (ClassNotFoundException e) {
 			 return;
 		}
+		System.out.println("vic");
 		for(String s: prob_vic.keySet()){
 			if(prob_vic.get(s)>0.0){
 				System.out.println(s+";;;;;"+prob_vic.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("tar");
+		for(String s: prob_tar.keySet()){
+			if(prob_tar.get(s)>0.0){
+				System.out.println(s+";;;;;"+prob_tar.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("org");
+		for(String s: prob_org.keySet()){
+			if(prob_org.get(s)>0.0){
+				System.out.println(s+";;;;;"+prob_org.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("indv");
+		for(String s: prob_indv.keySet()){
+			if(prob_indv.get(s)>0.0){
+				System.out.println(s+";;;;;"+prob_indv.get(s));
+			}
+		}
+
+		System.out.println();
+		System.out.println("weap");
+		for(String s: prob_weap.keySet()){
+			if(prob_weap.get(s)>0.0){
+				System.out.println(s+";;;;;"+prob_weap.get(s));
 			}
 		}
 		Scanner input_scanner = null;
@@ -143,11 +193,12 @@ public class Infoextract_sentence_adv {
 		try {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
-  		input_scanner = new Scanner(new File("DEV_ALL"));
-      ans_scanner = new Scanner(new File("ANS_ALL"));
 
-			//input_scanner = new Scanner(new File("testset1-input.txt"));
-      //ans_scanner = new Scanner(new File("testset1-anskeys.txt"));
+			//input_scanner = new Scanner(new File("DEV_ALL"));
+      //ans_scanner = new Scanner(new File("ANS_ALL"));
+
+			input_scanner = new Scanner(new File("testset1-input.txt"));
+      ans_scanner = new Scanner(new File("testset1-anskeys.txt"));
 
   		//input_scanner = new Scanner(new File("DEV-MUC3-0169"));
       //ans_scanner = new Scanner(new File("DEV-MUC3-0169.anskey"));
@@ -156,8 +207,10 @@ public class Infoextract_sentence_adv {
 		catch (FileNotFoundException e) {e.printStackTrace();}
 
 		MaxentTagger tagger = new MaxentTagger("./english-left3words-distsim.tagger");
-		//LexicalizedParser parsnip = LexicalizedParser.loadModel();
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, truecase");
+		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
 		// Go through all articles
 		String next_article_name = "";
@@ -175,7 +228,7 @@ public class Infoextract_sentence_adv {
 					next_article_name = next_line;
 				}
 				else
-					the_article += next_line;
+					the_article +=" "+ next_line;
 			}
 			if(!next_article_found){
 				done_with_stuff = true;
@@ -265,52 +318,107 @@ public class Infoextract_sentence_adv {
     		}
 
 				// SPLIT THE ARTICLE INTO SENTENCES
-				Reader reader = new StringReader(the_article);
+				Annotation article_with_case = new Annotation(the_article.toLowerCase());
+				Reader reader = new StringReader(article_with_case.toString());
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
+				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
-				/*
-        List<HasWord> best_sentence=null;
-        double best_val=0;
 
+
+				boolean no_attempt_tar=true;
+				boolean no_attempt_vic=true;
+				boolean no_attempt_org=true;
+				boolean no_attempt_indv=true;
+				boolean no_attempt_weap=true;
 				for (List<HasWord> sentence : dp){
-          double cur_best=0;
           for (HasWord word: sentence){
-            if(prob_vic.containsKey(word.word())){
-              if(cur_best<prob_vic.get(word.word())){
-                cur_best=prob_vic.get(word.word());
+            if(prob_tar.containsKey(word.word().toUpperCase())){
+              if(0.0<prob_tar.get(word.word().toUpperCase())){
+			        	update_hit_count(freq_tar, sentence, ans_tar, word.word());
+								no_attempt_tar=false;
               }
             }
-          }
-          if(best_val<cur_best){
-            best_val=cur_best;
-            best_sentence=sentence;
-          }
-        }
-        update_hit_count(best_sentence, ans_vic);
-				*/
-				boolean no_attempt=true;
-				for (List<HasWord> sentence : dp){
-          double cur_best=0;
-          for (HasWord word: sentence){
-            if(prob_vic.containsKey(word.word())){
-              if(0.0<prob_vic.get(word.word())){
-			        	update_hit_count(sentence, ans_vic, word.word());
-								no_attempt=false;
+						if(prob_vic.containsKey(word.word().toUpperCase())){
+              if(0.0<prob_vic.get(word.word().toUpperCase())){
+			        	update_hit_count(freq_vic, sentence, ans_vic, word.word());
+								no_attempt_vic=false;
               }
             }
+						if(prob_org.containsKey(word.word().toUpperCase())){
+              if(0.0<prob_org.get(word.word().toUpperCase())){
+			        	update_hit_count(freq_org, sentence, ans_org, word.word());
+								no_attempt_org=false;
+              }
+            }
+	          if(prob_weap.containsKey(word.word().toUpperCase())){
+	            if(0.0<prob_weap.get(word.word().toUpperCase())){
+				      	update_hit_count(freq_weap, sentence, ans_weapon, word.word());
+								no_attempt_weap=false;
+	            }
+	          }
+						if(prob_indv.containsKey(word.word().toUpperCase())){
+							if(0.0<prob_indv.get(word.word().toUpperCase())){
+								update_hit_count(freq_indv, sentence, ans_indv, word.word());
+								no_attempt_indv=false;
+							}
+						}
           }
         }
-				if(no_attempt){
-					update_hit_count(null, ans_vic, "");
+				if(no_attempt_tar){
+					update_hit_count(freq_tar, null, ans_tar, "");
+				}
+				if(no_attempt_vic){
+					update_hit_count(freq_vic, null, ans_vic, "");
+				}
+				if(no_attempt_org){
+					update_hit_count(freq_org, null, ans_org, "");
+				}
+				if(no_attempt_indv){
+					update_hit_count(freq_indv, null, ans_indv, "");
+				}
+				if(no_attempt_weap){
+					update_hit_count(freq_weap, null, ans_weapon, "");
 				}
         //
 			}
 		}
-		for(String s: freq.keySet()){
-			System.out.println(s);
-			freq.get(s).print_ratio();
-			System.out.println();
+		System.out.println("target");
+		for(String s: freq_tar.keySet()){
+			if(freq_tar.get(s).worthless()){
+				System.out.print("\""+s+"\", ");
+			}
 		}
+		System.out.println();
+		System.out.println("org");
+		for(String s: freq_org.keySet()){
+			//System.out.println(s);
+			if(freq_org.get(s).worthless()){
+				System.out.print("\""+s+"\", ");
+			}
+		}
+		System.out.println();
+		System.out.println("indv");
+		for(String s: freq_indv.keySet()){
+			if(freq_indv.get(s).worthless()){
+				System.out.print("\""+s+"\", ");
+			}
+		}
+		System.out.println();
+		System.out.println("vic");
+		for(String s: freq_vic.keySet()){
+			if(freq_vic.get(s).worthless()){
+				System.out.print("\""+s+"\", ");
+			}
+		}
+		System.out.println();
+		System.out.println("weap");
+		for(String s: freq_weap.keySet()){
+			//System.out.println(s);
+			if(freq_weap.get(s).worthless()){
+				System.out.print("\""+s+"\", ");
+			}
+		}
+		System.out.println();
     System.out.println("hits: "+hits);
     System.out.println("tries: "+tries);
 
@@ -328,21 +436,8 @@ public class Infoextract_sentence_adv {
     return output;
   }
 
-	private static void update_hit_count(List<HasWord> sentence, ArrayList<String[]> ans_, String word_in){
+	private static void update_hit_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_, String word_in){
 		if(sentence==null){
-			/*
-			System.out.println(";"+(ans_.get(0))[0]+";");
-			if(prob_vic.containsKey((ans_.get(0))[0])){
-				if(prob_vic.get((ans_.get(0))[0])>0.0){
-					for(String s: ans_.get(0)){
-						System.out.print(s+" ");
-					}
-					System.out.println();
-					System.out.println("WHAT THE FUCK THIS BULLSHIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				}
-			}*/
-
-			//System.out.println("HELLOOOOO");
 			if(((ans_.get(0))[0]).equals("-")){
 				hits++;
 			}
@@ -353,14 +448,14 @@ public class Infoextract_sentence_adv {
     for(String[] ans: ans_){
   		int index_in_seq=0;
   		for(HasWord word: sentence){
-  			if(ans[index_in_seq].equals(word.word())){
+  			if(ans[index_in_seq].equals(word.word().toUpperCase())){
   				index_in_seq=index_in_seq+1;
   				if(index_in_seq>=ans.length){
   						seq_found=true;
   						break;
   				}
   			}
-  			else if(ans[0].equals(word.word())){
+  			else if(ans[0].equals(word.word().toUpperCase())){
   				index_in_seq=1;
   				if(index_in_seq>=ans.length){
   						seq_found=true;
@@ -376,20 +471,20 @@ public class Infoextract_sentence_adv {
 		if(seq_found){
 			hits++;
       tries++;
-			if(freq.containsKey(word_in)){
-				freq.get(word_in).inc_both();
+			if(freq.containsKey(word_in.toUpperCase())){
+				freq.get(word_in.toUpperCase()).inc_both();
 			}
 			else{
-				freq.put(word_in, new Freq_tuple(1, 1));
+				freq.put(word_in.toUpperCase(), new Freq_tuple(1, 1));
 			}
 		}
 		else{
 			//System.out.println("Missed with: "+word_in);
-			if(freq.containsKey(word_in)){
-				freq.get(word_in).inc_de();
+			if(freq.containsKey(word_in.toUpperCase())){
+				freq.get(word_in.toUpperCase()).inc_de();
 			}
 			else{
-				freq.put(word_in, new Freq_tuple(0, 1));
+				freq.put(word_in.toUpperCase(), new Freq_tuple(0, 1));
 			}
 			tries++;
 		}

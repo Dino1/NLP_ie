@@ -20,8 +20,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 
+import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.SentenceUtils;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
@@ -33,6 +37,12 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.trees.Constituent;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.parser.nndep.DependencyParser;
+import edu.stanford.nlp.trees.GrammaticalStructure;
+import edu.stanford.nlp.trees.TypedDependency;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.*;
+import edu.stanford.nlp.ling.CoreAnnotations;
 
 /**
  * CS 5340
@@ -116,8 +126,10 @@ public class Term_Selecter_adv {
 		catch (FileNotFoundException e) {e.printStackTrace();}
 
 		MaxentTagger tagger = new MaxentTagger("./english-left3words-distsim.tagger");
-		//LexicalizedParser parsnip = LexicalizedParser.loadModel();
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, truecase");
+		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
 		// Go through all articles
 		String next_article_name = "";
@@ -135,7 +147,7 @@ public class Term_Selecter_adv {
 					next_article_name = next_line;
 				}
 				else
-					the_article += next_line;
+					the_article +=" "+ next_line;
 			}
 			if(!next_article_found){
 				done_with_stuff = true;
@@ -225,7 +237,8 @@ public class Term_Selecter_adv {
     		}
 
 				// SPLIT THE ARTICLE INTO SENTENCES
-				Reader reader = new StringReader(the_article);
+				Annotation article_with_case = new Annotation(the_article.toLowerCase());
+				Reader reader = new StringReader(article_with_case.toString());
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();

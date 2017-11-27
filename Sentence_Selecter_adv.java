@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Arrays;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.TrueCaseAnnotator;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.SentenceUtils;
@@ -34,6 +36,12 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import edu.stanford.nlp.trees.Constituent;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.parser.nndep.DependencyParser;
+import edu.stanford.nlp.trees.GrammaticalStructure;
+import edu.stanford.nlp.trees.TypedDependency;
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.*;
+import edu.stanford.nlp.ling.CoreAnnotations;
 
 /**
  * CS 5340
@@ -80,6 +88,8 @@ public class Sentence_Selecter_adv {
 	private static HashMap<String, Freq_tuple> freq_tar=new HashMap<>();
 	private static HashMap<String, Freq_tuple> freq_vic=new HashMap<>();
 
+	private static AbstractSequenceClassifier<CoreLabel> classifier = null;
+
 	public static void main(String[] args) {
 		try {
 			 FileInputStream in_file = new FileInputStream("./dict.ser");
@@ -87,6 +97,9 @@ public class Sentence_Selecter_adv {
 			 dict = (HashMap<String, Integer>) in.readObject();
 			 in.close();
 			 in_file.close();
+
+
+			 classifier=CRFClassifier.getClassifier("./english.all.3class.distsim.crf.ser.gz");
 		} catch (IOException e) {
 			 e.printStackTrace();
 			 return;
@@ -116,9 +129,10 @@ public class Sentence_Selecter_adv {
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
 
+
 		MaxentTagger tagger = new MaxentTagger("./english-left3words-distsim.tagger");
-		//LexicalizedParser parsnip = LexicalizedParser.loadModel();
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
+		TrueCaseAnnotator caser = new TrueCaseAnnotator("./truecasing.fast.caseless.qn.ser.gz", TrueCaseAnnotator.DEFAULT_MODEL_BIAS, "./MixDisambiguation.list" , false, false);
 
 		// Go through all articles
 		String next_article_name = "";
@@ -226,7 +240,8 @@ public class Sentence_Selecter_adv {
     		}
 
 				// SPLIT THE ARTICLE INTO SENTENCES
-				Reader reader = new StringReader(the_article);
+				Annotation article_with_case = new Annotation(the_article.toLowerCase());
+				Reader reader = new StringReader(article_with_case.toString());
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
@@ -326,6 +341,7 @@ public class Sentence_Selecter_adv {
 	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
 
 		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("TWO", "FIVE", "SIX", "BY", "IS", "AS", "AT", "ON", "TO", "THIS","AND", "THE", "OF", "A", "IN", "", "-", "-LSB-", "-RSB-", "-RRB-", "-LRB-", "", ",", ";", ".", "'S", "--", "``"));
+		String proper_case_ans="";
 		for(String[] ans: ans_){
 			boolean seq_found=false;
 			int index_in_seq=0;
@@ -334,7 +350,8 @@ public class Sentence_Selecter_adv {
 			int index=-1;
 			for(HasWord word: sentence){
 				index++;
-				if(ans[index_in_seq].equals(word.word())){
+				if(ans[index_in_seq].equals(word.word().toUpperCase())){
+					proper_case_ans=proper_case_ans+" "+word.word();
 					if(ans_start_loc==-1){
 						ans_start_loc=index;
 					}
@@ -345,22 +362,38 @@ public class Sentence_Selecter_adv {
 							break;
 					}
 				}
-				else if(ans[0].equals(word.word())){
+				else if(ans[0].equals(word.word().toUpperCase())){
+					proper_case_ans=word.word();
 					ans_start_loc=index;
 					index_in_seq=1;
 					if(index_in_seq>=ans.length){
 						ans_end_loc=index;
-							seq_found=true;
-							break;
+						seq_found=true;
+						break;
 					}
 				}
 				else{
+					proper_case_ans="";
 					ans_start_loc=-1;
 					index_in_seq=0;
 				}
 			}
 			index=-1;
 			if(seq_found){
+				List<List<CoreLabel>> out = classifier.classify(proper_case_ans);
+				boolean dont_stop=false;
+	      for (List<CoreLabel> augh : out) {
+	        for (CoreLabel word : augh) {
+	          //System.out.print(word.word() + '/' + word.get(CoreAnnotations.AnswerAnnotation.class)+" ");
+						if(word.get(CoreAnnotations.AnswerAnnotation.class).equals("PERSON")){
+							dont_stop=true;
+						}
+	        }
+	        //System.out.println();
+	      }
+				if(dont_stop==false){
+					return;
+				}
 				/*
 				for(HasWord word: sentence){
 					index++;
@@ -377,34 +410,34 @@ public class Sentence_Selecter_adv {
 				for(HasWord word: sentence){
 					index++;
 
-					if(ignore_words.contains(word.word())){
+					if(ignore_words.contains(word.word().toUpperCase())){
 
 					}
 					else{
 						//index++;
 
-						if(index<=ans_start_loc && (index+4)>=ans_start_loc){
-							if(freq.containsKey(word.word())){
-								freq.get(word.word()).inc_both();
+						if(index<ans_start_loc && (index+4)>=ans_start_loc){
+							if(freq.containsKey(word.word().toUpperCase())){
+								freq.get(word.word().toUpperCase()).inc_both();
 							}
 							else{
-								freq.put(word.word(), new Freq_tuple(1, 1));
+								freq.put(word.word().toUpperCase(), new Freq_tuple(1, 1));
 							}
 						}
-						else if(index>=ans_end_loc && (index-4)<=ans_end_loc){
-							if(freq.containsKey(word.word())){
-								freq.get(word.word()).inc_both();
+						else if(index>ans_end_loc && (index-4)<=ans_end_loc){
+							if(freq.containsKey(word.word().toUpperCase())){
+								freq.get(word.word().toUpperCase()).inc_both();
 							}
 							else{
-								freq.put(word.word(), new Freq_tuple(1, 1));
+								freq.put(word.word().toUpperCase(), new Freq_tuple(1, 1));
 							}
 						}
 						else{
-							if(freq.containsKey(word.word())){
-								freq.get(word.word()).inc_de();
+							if(freq.containsKey(word.word().toUpperCase())){
+								freq.get(word.word().toUpperCase()).inc_de();
 							}
 							else{
-								freq.put(word.word(), new Freq_tuple(0, 1));
+								freq.put(word.word().toUpperCase(), new Freq_tuple(0, 1));
 							}
 						}
 					}
@@ -412,14 +445,17 @@ public class Sentence_Selecter_adv {
 				}
 			}
 			else{
+				/*
 				for(HasWord word: sentence){
-					if(freq.containsKey(word.word())){
-						freq.get(word.word()).inc_de();
+					if(freq.containsKey(word.word().toUpperCase())){
+						freq.get(word.word().toUpperCase()).inc_de();
 					}
 					else{
-						freq.put(word.word(), new Freq_tuple(0, 1));
+						freq.put(word.word().toUpperCase(), new Freq_tuple(0, 1));
 					}
 				}
+				*/
+				return;
 			}
 		}
 	}

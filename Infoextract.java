@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Arrays;
+import java.lang.Integer;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.FileInputStream;
@@ -161,8 +162,13 @@ public class Infoextract {
 				List<CoreMap> sentences = article_annotation.get(SentencesAnnotation.class);
 				String article_with_case = "";
 				for(CoreMap sentence : sentences)
-					for(CoreLabel token : sentence.get(TokensAnnotation.class))
-						article_with_case += token.get(TrueCaseTextAnnotation.class) + " ";
+					for(CoreLabel token : sentence.get(TokensAnnotation.class)){
+						String next_chunk = token.get(TrueCaseTextAnnotation.class);
+						if(next_chunk.equals("'s"))
+							article_with_case = article_with_case.substring(0, article_with_case.length() - 1) + "'s ";
+						else
+							article_with_case += next_chunk + " ";
+					}
 
 				Reader reader = new StringReader(article_with_case);
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
@@ -366,7 +372,8 @@ public class Infoextract {
 	private static void noun_phrase_extract( ArrayList<ArrayList<Word>> noun_phrases, ArrayList<Tree> tag_trees){
 
 		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("THIS","AND", "THE", "OF", "A", "IN", "", "-"));
-		ArrayList<String> first_words = new ArrayList<String>(Arrays.asList("THE", "A", "AN"));
+		ArrayList<String> first_words = new ArrayList<String>(Arrays.asList("THE", "A", "AN", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "MONSIGNOR", "MSGR"));
+		ArrayList<String> months = new ArrayList<String>(Arrays.asList("JAN", "FEB", "MARCH", "MAR", "APRIL", "MAY", "JUNE", "JUN", "JULY", "JUL", "AUG", "AUGUST", "SEP", "SEPT", "SEPTEMBER", "OCT", "OCTOBER", "NOV", "NOVEMBER", "DEC", "DECEMBER"));
 
 		for(Tree t : tag_trees){
 			for(Tree sub: t){
@@ -379,12 +386,21 @@ public class Infoextract {
 									if(fuuu!=null){
 										ArrayList<Word> add_words = sub.yieldWords();
 										fuuu.removeChild(fuuu.objectIndexOf(sub));
-										if(add_words.size() == 1 && ignore_words.contains(add_words.get(0).word().toUpperCase())){
+										if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0).word().toUpperCase())){
 										}
 										else{
 											if(!noun_phrases.contains(add_words)){
-												if(first_words.contains(add_words.get(0).word().toUpperCase()))
+												String first_word = add_words.get(0).word().toUpperCase();
+												if(first_words.contains(first_word))
 													add_words.remove(0);
+												try{
+													int first_int = Integer.parseInt(first_word);
+													if(add_words.size() == 1)
+														continue;
+													if(months.contains(add_words.get(1).word().toUpperCase()))
+														continue;													
+													}													
+												catch(Exception e){}
 												noun_phrases.add(add_words);
 											}
 										}

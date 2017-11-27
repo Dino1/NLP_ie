@@ -350,6 +350,9 @@ public class Infoextract {
 
 			if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))
 				continue;
+			
+			if(noun_phrase.contains("-LRB-") || noun_phrase.contains("-RRB-"))
+				continue;
 
 			//data = feature_maker(np);
 			if(!noun_phrase.equals("")){
@@ -363,6 +366,7 @@ public class Infoextract {
 	private static void noun_phrase_extract( ArrayList<ArrayList<Word>> noun_phrases, ArrayList<Tree> tag_trees){
 
 		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("THIS","AND", "THE", "OF", "A", "IN", "", "-"));
+		ArrayList<String> first_words = new ArrayList<String>(Arrays.asList("THE", "A", "AN"));
 
 		for(Tree t : tag_trees){
 			for(Tree sub: t){
@@ -375,14 +379,14 @@ public class Infoextract {
 									if(fuuu!=null){
 										ArrayList<Word> add_words = sub.yieldWords();
 										fuuu.removeChild(fuuu.objectIndexOf(sub));
-										if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0).word().toUpperCase())){
+										if(add_words.size() == 1 && ignore_words.contains(add_words.get(0).word().toUpperCase())){
 										}
 										else{
 											if(!noun_phrases.contains(add_words)){
-																										if(add_words.get(0).word().toUpperCase().equals("THE"))
-																												add_words.remove(0);
-																										noun_phrases.add(add_words);
-																								}
+												if(first_words.contains(add_words.get(0).word().toUpperCase()))
+													add_words.remove(0);
+												noun_phrases.add(add_words);
+											}
 										}
 									}
 								}

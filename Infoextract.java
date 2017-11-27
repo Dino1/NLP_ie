@@ -356,7 +356,7 @@ public class Infoextract {
 
 			if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))
 				continue;
-			
+
 			if(noun_phrase.contains("-LRB-") || noun_phrase.contains("-RRB-"))
 				continue;
 
@@ -386,7 +386,7 @@ public class Infoextract {
 									if(fuuu!=null){
 										ArrayList<Word> add_words = sub.yieldWords();
 										fuuu.removeChild(fuuu.objectIndexOf(sub));
-										if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0).word().toUpperCase())){
+										if(add_words.size() == 1 && ignore_words.contains(add_words.get(0).word().toUpperCase())){
 										}
 										else{
 											if(!noun_phrases.contains(add_words)){
@@ -398,8 +398,8 @@ public class Infoextract {
 													if(add_words.size() == 1)
 														continue;
 													if(months.contains(add_words.get(1).word().toUpperCase()))
-														continue;													
-													}													
+														continue;
+													}
 												catch(Exception e){}
 												noun_phrases.add(add_words);
 											}

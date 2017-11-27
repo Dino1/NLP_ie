@@ -19,10 +19,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.TrueCaseAnnotator;
+import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.SentenceUtils;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
@@ -74,7 +76,9 @@ public class Infoextract {
 
 		MaxentTagger tagger = new MaxentTagger("./english-left3words-distsim.tagger");
 		LexicalizedParser parsnip = LexicalizedParser.loadModel("englishPCFG.ser");
-        TrueCaseAnnotator caser = new TrueCaseAnnotator("./truecasing.fast.caseless.qn.ser.gz", TrueCaseAnnotator.DEFAULT_MODEL_BIAS, "./MixDisambiguation.list" , false, false);
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, truecase");
+		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
         
 		// Go through all articles
 		String next_article_name = "";
@@ -92,7 +96,7 @@ public class Infoextract {
 					next_article_name = next_line;
 				}
 				else
-					the_article += next_line;
+					the_article += " " + next_line;
 			}
 			if(!next_article_found){
 				done_with_stuff = true;
@@ -106,10 +110,19 @@ public class Infoextract {
 				if(ID.charAt(0) == 'D')
 					ID = ID.substring(0, 13);
 
-				// SPLIT THE ARTICLE INTO SENTENCES
-                Annotation article_with_case = new Annotation(the_article.toLowerCase());
-                //caser.annotate(article_with_case);
-				Reader reader = new StringReader(article_with_case.toString());
+				// SET UP PIPELINE TO USE TRUE CASE
+				the_article = the_article.toLowerCase();
+				Annotation article_annotation = new Annotation(the_article);
+				pipeline.annotate(article_annotation);
+				
+				// FIND WHICH WORDS NEED TO BE REPLACED
+				List<CoreMap> sentences = article_annotation.get(SentencesAnnotation.class);
+				String article_with_case = "";
+				for(CoreMap sentence : sentences)
+					for(CoreLabel token : sentence.get(TokensAnnotation.class))
+						article_with_case += token.get(TrueCaseTextAnnotation.class) + " ";
+				
+				Reader reader = new StringReader(article_with_case);
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 				ArrayList<Tree> tag_trees = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases=new ArrayList<ArrayList<Word>>();
@@ -161,27 +174,36 @@ public class Infoextract {
 				ArrayList<String> victims = new ArrayList<String>();
 
 				double[] data;
-				for(ArrayList<Word> np : noun_phrases){
-					data = feature_maker(np);
-
+				for(ArrayList<Word> np : noun_phrases){	
+				
 					String noun_phrase="";
-					for(Word w: np){
-						noun_phrase+=" "+w.word().toUpperCase();
+					for(Word w: np)
+						noun_phrase+= w.word().toUpperCase() + " ";
+					
+					if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))
+						continue;
+					
+					data = feature_maker(np);
+					if(!noun_phrase.equals("")){
+
+						//if(weapons_winnow.predict(data) == 1)
+						if(!weapons.contains(noun_phrase))
+							weapons.add(noun_phrase);
+						//if(individuals_winnow.predict(data) == 1)
+						if(!individuals.contains(noun_phrase))
+							individuals.add(noun_phrase);
+						//if(organizations_winnow.predict(data) == 1)
+						if(!organizations.contains(noun_phrase))
+							organizations.add(noun_phrase);
+						//if(targets_winnow.predict(data) == 1)
+						if(!targets.contains(noun_phrase))
+							targets.add(noun_phrase);
+						//if(victims_winnow.predict(data) == 1)
+						if(!victims.contains(noun_phrase))
+							victims.add(noun_phrase);
 					}
-					noun_phrase=noun_phrase.substring(1);
-
-					if(weapons_winnow.predict(data) == 1)
-						weapons.add(noun_phrase);
-					if(individuals_winnow.predict(data) == 1)
-						individuals.add(noun_phrase);
-					if(organizations_winnow.predict(data) == 1)
-						organizations.add(noun_phrase);
-					if(targets_winnow.predict(data) == 1)
-						targets.add(noun_phrase);
-					if(victims_winnow.predict(data) == 1)
-						victims.add(noun_phrase);
 				}
-
+				
 				// DO SOME MAGICAL WORK TO IDENTIFY WHICH NOUN PHRASES ARE ACTUALLY DUPLICATES
 
 				// ...

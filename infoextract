@@ -10,6 +10,6 @@ javac -cp ".:./stanford-corenlp-3.8.0.jar" Term_Selecter_adv.java
 java -cp ".:./stanford-corenlp-3.8.0.jar" Term_Selecter_adv
 
 javac -cp ".:./stanford-corenlp-3.8.0.jar" Infoextract.java
-java -cp ".:./stanford-corenlp-3.8.0.jar" $1
+java -cp ".:./stanford-corenlp-3.8.0.jar"  Infoextract $1
 
 echo potato

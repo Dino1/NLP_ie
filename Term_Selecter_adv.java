@@ -256,11 +256,11 @@ public class Term_Selecter_adv {
 		}
 
 		//SAVE ALL THE THINGS
-		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 2, .1);
-		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 2, .1);
-		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 2, .1);
-		HashMap<String, Double> prob_org=terrible_converter(freq_org, 2, .1);
-		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 2, .1);
+		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 3, .2);
+		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 3, .2);
+		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 3, .2);
+		HashMap<String, Double> prob_org=terrible_converter(freq_org, 3, .2);
+		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 3, .2);
     try {
       FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_weapon_adv.ser");
       ObjectOutputStream out = new ObjectOutputStream(fileOut);

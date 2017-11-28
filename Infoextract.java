@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.TreeMap;
+import java.util.Collections;
 
 import edu.stanford.nlp.pipeline.*;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -184,9 +186,42 @@ public class Infoextract {
 		} catch (ClassNotFoundException e) {
 			 return;
 		}
-
-
-
+		/*
+		System.out.println("vic");
+		for(String s: prob_vic.keySet()){
+			if(prob_vic.get(s)>0){
+				System.out.println(s+"::::::::::::"+prob_vic.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("org");
+		for(String s: prob_org.keySet()){
+			if(prob_org.get(s)>0){
+				System.out.println(s+"::::::::::::"+prob_org.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("tar");
+		for(String s: prob_tar.keySet()){
+			if(prob_tar.get(s)>0){
+				System.out.println(s+"::::::::::::"+prob_tar.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("indv");
+		for(String s: prob_indv.keySet()){
+			if(prob_indv.get(s)>0){
+				System.out.println(s+"::::::::::::"+prob_indv.get(s));
+			}
+		}
+		System.out.println();
+		System.out.println("weap");
+		for(String s: prob_weap.keySet()){
+			if(prob_weap.get(s)>0){
+				System.out.println(s+"::::::::::::"+prob_weap.get(s));
+			}
+		}
+		*/
 		Scanner input_scanner = null;
 		PrintWriter  writer = null;
 		try {
@@ -356,21 +391,46 @@ public class Infoextract {
 						}
           }
 					Tree temp_tree = parsnip.apply(tagger.tagSentence(sentence));
+
 					if(no_attempt_tar==false){
-						tag_trees_tar.add(temp_tree);
+						tag_trees_tar.add(temp_tree.deepCopy());
 					}
 					if(no_attempt_vic==false){
-						tag_trees_vic.add(temp_tree);
+						tag_trees_vic.add(temp_tree.deepCopy());
 					}
 					if(no_attempt_org==false){
-						tag_trees_org.add(temp_tree);
+						tag_trees_org.add(temp_tree.deepCopy());
 					}
 					if(no_attempt_weap==false){
-						tag_trees_weap.add(temp_tree);
+						tag_trees_weap.add(temp_tree.deepCopy());
 					}
 					if(no_attempt_indv==false){
-						tag_trees_indv.add(temp_tree);
+						tag_trees_indv.add(temp_tree.deepCopy());
 					}
+/*
+					if(no_attempt_tar==true){
+						tag_trees_tar.add(temp_tree.deepCopy());
+					}
+					if(no_attempt_vic==true){
+						tag_trees_vic.add(temp_tree.deepCopy());
+					}
+					if(no_attempt_org==true){
+						tag_trees_org.add(temp_tree.deepCopy());
+					}
+					if(no_attempt_weap==true){
+						tag_trees_weap.add(temp_tree.deepCopy());
+					}
+					if(no_attempt_indv==true){
+						tag_trees_indv.add(temp_tree.deepCopy());
+					}
+	*/
+					/*
+					tag_trees_tar.add(temp_tree);
+					tag_trees_vic.add(temp_tree);
+					tag_trees_org.add(temp_tree);
+					tag_trees_weap.add(temp_tree);
+					tag_trees_indv.add(temp_tree);
+					*/
 				}
 				String ans_inc="ATTACK";
 				if(attack==max){
@@ -436,6 +496,8 @@ public class Infoextract {
 					else
 						writer.println("                " + weapons.get(i));
 				}
+					//writer.println("PERP INDIV:     " + "-");
+					//writer.println("PERP ORG:       " + "-");
 
 				if(individuals.size() == 0)
 					writer.println("PERP INDIV:     " + "-");
@@ -454,6 +516,7 @@ public class Infoextract {
 					else
 						writer.println("                " + organizations.get(i));
 				}
+				
 
 				if(targets.size() == 0)
 					writer.println("TARGET:         " + "-");
@@ -505,13 +568,18 @@ public class Infoextract {
 
 		ArrayList<String> months = new ArrayList<String>(Arrays.asList("JAN", "FEB", "MARCH", "MAR", "APRIL", "MAY", "JUNE", "JUN", "JULY", "JUL", "AUG", "AUGUST", "SEP", "SEPT", "SEPTEMBER", "OCT", "OCTOBER", "NOV", "NOVEMBER", "DEC", "DECEMBER"));
 		ArrayList<String> weekdays = new ArrayList<String>(Arrays.asList("MON", "MONDAY", "TUES", "TUE", "TUESDAY", "WED", "WEDNESDAY", "THUR", "THURS", "THURSDAY", "FRI", "FRIDAY", "SAT", "SATURDAY", "SUN", "SUNDAY"));
+		HashMap<String, Double> best_opt=new HashMap<>();
 
 		for(ArrayList<Word> np : noun_phrases){
 			String noun_phrase="";
 			boolean at_least_one=false;
+			double max_val=0;
 			for(Word w: np){
 				if(term_prune.containsKey(w.word().toUpperCase())){
 					if(term_prune.get(w.word().toUpperCase())>0.0){
+						if(term_prune.get(w.word().toUpperCase())>max_val){
+							max_val=term_prune.get(w.word().toUpperCase());
+						}
 						//carry on
 						at_least_one=true;
 					}
@@ -534,11 +602,23 @@ public class Infoextract {
 					break;
 				}
 
-				if(w.word().equals("'s"))
+				if(w.word().equals("'s")){
+					if(noun_phrase.equals("")){
+						break;
+					}
 					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "'S ";
+				}
+				else if(w.word().equals("'")){
+					if(noun_phrase.equals("")){
+						break;
+					}
+					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "' ";
+				}
 				else
 					noun_phrase+= w.word().toUpperCase() + " ";
 			}
+
+
 			if(at_least_one){
 
 			}
@@ -558,8 +638,36 @@ public class Infoextract {
 			//data = feature_maker(np);
 			if(!noun_phrase.equals("")){
 				//if(weapons_winnow.predict(data) == 1)
-				if(!ans.contains(noun_phrase)){
-					ans.add(noun_phrase);
+				if(!best_opt.containsKey(noun_phrase)){
+					//ans.add(noun_phrase);
+					best_opt.put(noun_phrase, max_val);
+				}
+			}
+		}
+		if(best_opt.size()<=5){
+			ans.addAll(best_opt.keySet());
+			return;
+		}
+		List<Double> temp_l=new ArrayList<>(best_opt.values() );
+		Collections.sort(temp_l);
+		Collections.reverse(temp_l);
+		//System.out.println(temp_l.get(1)+";;;;;;"+temp_l.get(5));
+		Double min_val=temp_l.get(5);
+		String all_so_far="";
+		for(String s: best_opt.keySet()){
+			if(best_opt.get(s)>min_val){
+				/*
+				if(all_so_far.contains(s)){
+
+				}
+				else{
+					ans.add(s);
+
+				}*/
+
+				ans.add(s);
+				if(ans.size()>=5){
+					return;
 				}
 			}
 		}

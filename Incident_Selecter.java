@@ -164,6 +164,9 @@ public class Incident_Selecter{
 			input_scanner = new Scanner(new File("DEV_ALL"));
       ans_scanner = new Scanner(new File("ANS_ALL"));
 
+			//input_scanner = new Scanner(new File("every.txt"));
+      //ans_scanner = new Scanner(new File("every_ans.txt"));
+
 			//writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}

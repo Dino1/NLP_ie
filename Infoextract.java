@@ -75,6 +75,8 @@ public class Infoextract {
   private static   HashMap<String, Double> prob_kidnapping=null;
   private static   HashMap<String, Double> prob_robbery=null;
 
+	private static AbstractSequenceClassifier<CoreLabel> classifier = null;
+
 	public static void main(String[] args) {
 
 		try {
@@ -179,6 +181,8 @@ public class Infoextract {
 			 prob_bombing = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
+
+			 classifier=CRFClassifier.getClassifier("./english.all.3class.distsim.crf.ser.gz");
 
 		} catch (IOException e) {
 			 e.printStackTrace();
@@ -484,6 +488,8 @@ public class Infoextract {
 				ans_extract(noun_phrases_weap, weapons, term_weap);
 				ans_extract(noun_phrases_indv, individuals, term_indv);
 
+				vic_extract(noun_phrases_vic, victims);
+
 				// OUTPUT THE STUFFS
 				writer.println("ID:             " + ID);
 				writer.println("INCIDENT:       " + ans_inc);
@@ -496,9 +502,9 @@ public class Infoextract {
 					else
 						writer.println("                " + weapons.get(i));
 				}
-					//writer.println("PERP INDIV:     " + "-");
-					//writer.println("PERP ORG:       " + "-");
-
+					writer.println("PERP INDIV:     " + "-");
+					writer.println("PERP ORG:       " + "-");
+/*
 				if(individuals.size() == 0)
 					writer.println("PERP INDIV:     " + "-");
 				for(int i = 0; i < individuals.size(); i++){
@@ -516,7 +522,7 @@ public class Infoextract {
 					else
 						writer.println("                " + organizations.get(i));
 				}
-				
+				*/
 
 				if(targets.size() == 0)
 					writer.println("TARGET:         " + "-");
@@ -562,6 +568,50 @@ public class Infoextract {
 		*/
 
 		return output;
+	}
+
+	private static void vic_extract(ArrayList<ArrayList<Word>> noun_phrases, ArrayList<String> ans){
+		for(ArrayList<Word> np : noun_phrases){
+			String noun_phrase="";
+			for(Word w: np){
+
+				if(w.word().equals("'s")){
+					if(noun_phrase.equals("")){
+						break;
+					}
+					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "'S ";
+				}
+				else if(w.word().equals("'")){
+					if(noun_phrase.equals("")){
+						break;
+					}
+					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "' ";
+				}
+				else
+					noun_phrase+= w.word().toUpperCase() + " ";
+			}
+			List<List<CoreLabel>> out = classifier.classify(noun_phrase);
+			boolean dont_stop=false;
+			String revised_phrase="";
+			for (List<CoreLabel> augh : out) {
+				for (CoreLabel word : augh) {
+					//System.out.print(word.word() + '/' + word.get(CoreAnnotations.AnswerAnnotation.class)+" ");
+					if(word.get(CoreAnnotations.AnswerAnnotation.class).equals("PERSON")){
+						revised_phrase+=word.word().toUpperCase() + " ";
+					}
+				}
+				//System.out.println();
+			}
+			noun_phrase=revised_phrase;
+			//data = feature_maker(np);
+			if(!noun_phrase.equals("")){
+				//if(weapons_winnow.predict(data) == 1)
+				if(!ans.contains(noun_phrase)){
+					ans.add(noun_phrase);
+				}
+			}
+		}
+
 	}
 
 	private static void ans_extract(ArrayList<ArrayList<Word>> noun_phrases, ArrayList<String> ans, HashMap<String, Double> term_prune){

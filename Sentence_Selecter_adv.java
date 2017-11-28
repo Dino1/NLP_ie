@@ -140,6 +140,8 @@ public class Sentence_Selecter_adv {
 			input_scanner = new Scanner(new File("DEV_ALL"));
       ans_scanner = new Scanner(new File("ANS_ALL"));
 
+			//input_scanner = new Scanner(new File("every.txt"));
+      //ans_scanner = new Scanner(new File("every_ans.txt"));
 			//writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}
@@ -292,11 +294,11 @@ public class Sentence_Selecter_adv {
 		}
 
 		//SAVE ALL THE THINGS
-		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 3, .2);
-		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 3, .2);
-		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 3, .2);
-		HashMap<String, Double> prob_org=terrible_converter(freq_org, 3, .2);
-		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 3, .2);
+		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 2, .25);
+		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 2, .25);
+		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 2, .25);
+		HashMap<String, Double> prob_org=terrible_converter(freq_org, 2, .25);
+		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 2, .25);
 
 		Set<String> all_now=new HashSet<String>();
 		all_now.addAll(prob_weapon.keySet());

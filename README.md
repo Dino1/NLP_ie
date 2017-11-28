@@ -1,7 +1,7 @@
 TEAM: Rowdy Raccoons
 MEMBERS: Jacob Luke, Bernard Serbinowski
 
-NLP Projct Midpoint Evaluation
+NLP Projct Final Evaluation
 
 1. 	We made extensive use of Stanford's CoreNLP library, available here: https://stanfordnlp.github.io/CoreNLP/download.html
 	We used this library to do POS tagging, constituency parsing, true casing, and some NER work

@@ -488,7 +488,7 @@ public class Infoextract {
 				ans_extract(noun_phrases_weap, weapons, term_weap);
 				ans_extract(noun_phrases_indv, individuals, term_indv);
 
-				vic_extract(noun_phrases_vic, victims);
+				//vic_extract(noun_phrases_vic, victims);
 
 				// OUTPUT THE STUFFS
 				writer.println("ID:             " + ID);

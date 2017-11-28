@@ -1,4 +1,4 @@
-//package final_project;//commented out because i'm not using packages atm. comment back in when running on JACOB
+
 
 
 //import final_project.Winnow;
@@ -119,11 +119,11 @@ public class Term_Selecter_adv {
 		try {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
-			input_scanner = new Scanner(new File("DEV_ALL"));
-      ans_scanner = new Scanner(new File("ANS_ALL"));
+			//input_scanner = new Scanner(new File("DEV_ALL"));
+      //ans_scanner = new Scanner(new File("ANS_ALL"));
 
-			//input_scanner = new Scanner(new File("every.txt"));
-      //ans_scanner = new Scanner(new File("every_ans.txt"));
+			input_scanner = new Scanner(new File("every.txt"));
+      ans_scanner = new Scanner(new File("every_ans.txt"));
 			//writer = new PrintWriter("input.txt.template");
 		}
 		catch (FileNotFoundException e) {e.printStackTrace();}

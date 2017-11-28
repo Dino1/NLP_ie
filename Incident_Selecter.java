@@ -1,4 +1,3 @@
-//package final_project;//commented out because i'm not using packages atm. comment back in when running on JACOB
 
 
 //import final_project.Winnow;
@@ -142,16 +141,6 @@ public class Incident_Selecter{
 		Scanner input_scanner = null;
     Scanner ans_scanner = null;
 		PrintWriter  writer = null;
-		//try {input_scanner = new Scanner(new File(args[0]));}
-
-/*
-		ArrayList<ArrayList<ArrayList <Word> > > articles=new ArrayList<ArrayList<ArrayList<Word > > >();
-		ArrayList<ArrayList<String[]> > art_ans_weapon=new ArrayList<ArrayList<String[]> >();//2
-		ArrayList<ArrayList<String[]> > art_ans_indv=new ArrayList<ArrayList<String[]> >();//3
-		ArrayList<ArrayList<String[]> > art_ans_org=new ArrayList<ArrayList<String[]> >();//4
-		ArrayList<ArrayList<String[]> > art_ans_tar=new ArrayList<ArrayList<String[]> >();//5
-		ArrayList<ArrayList<String[]> > art_ans_vic=new ArrayList<ArrayList<String[]> >();//6
-		*/
 		try {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
@@ -161,11 +150,11 @@ public class Incident_Selecter{
 			//input_scanner = new Scanner(new File("testset1-input.txt"));
       //ans_scanner = new Scanner(new File("testset1-anskeys.txt"));
 
-			input_scanner = new Scanner(new File("DEV_ALL"));
-      ans_scanner = new Scanner(new File("ANS_ALL"));
+			//input_scanner = new Scanner(new File("DEV_ALL"));
+      //ans_scanner = new Scanner(new File("ANS_ALL"));
 
-			//input_scanner = new Scanner(new File("every.txt"));
-      //ans_scanner = new Scanner(new File("every_ans.txt"));
+			input_scanner = new Scanner(new File("every.txt"));
+      ans_scanner = new Scanner(new File("every_ans.txt"));
 
 			//writer = new PrintWriter("input.txt.template");
 		}

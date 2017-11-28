@@ -1,3 +1,15 @@
-javac -cp ".:./stanford-corenlp-3.8.0.jar" Winnow.java
+javac -cp ".:./stanford-corenlp-3.8.0.jar" Incident_Selecter.java
+java -cp ".:./stanford-corenlp-3.8.0.jar" Incident_Selecter
+
+
+javac -cp ".:./stanford-corenlp-3.8.0.jar" Sentence_Selecter_adv.java
+java -cp ".:./stanford-corenlp-3.8.0.jar" Sentence_Selecter_adv
+
+
+javac -cp ".:./stanford-corenlp-3.8.0.jar" Term_Selecter_adv.java
+java -cp ".:./stanford-corenlp-3.8.0.jar" Term_Selecter_adv
+
 javac -cp ".:./stanford-corenlp-3.8.0.jar" Infoextract.java
-java -cp ".:./stanford-corenlp-3.8.0.jar" Infoextract $1
+java -cp ".:./stanford-corenlp-3.8.0.jar" $1
+
+echo potato

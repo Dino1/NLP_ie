@@ -1,2 +1,0 @@
-javac -cp ".:./stanford-corenlp-3.8.0.jar" Sentence_Selecter.java
-java -cp ".:./stanford-corenlp-3.8.0.jar" Sentence_Selecter $1

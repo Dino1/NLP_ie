@@ -68,12 +68,12 @@ class Freq_tuple {
 	public void inc_de(){
 		denominator=denominator+1;
 	}
-	public Double get_doub(){
+	public Double get_doub(int cut_off, double min_val){
 		//System.out.println(numerator+"  "+denominator+ " "+((double)(numerator))/((double)(denominator)));
-		if(numerator<5){
+		if(numerator<cut_off){
 			return 0.0;
 		}
-		if(((double)(numerator))/((double)(denominator))<.2){
+		if(((double)(numerator))/((double)(denominator))<min_val){
 			return 0.0;
 		}
 		return ((double)(numerator))/((double)(denominator));
@@ -256,11 +256,11 @@ public class Term_Selecter_adv {
 		}
 
 		//SAVE ALL THE THINGS
-		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon);
-		HashMap<String, Double> prob_vic=terrible_converter(freq_vic);
-		HashMap<String, Double> prob_tar=terrible_converter(freq_tar);
-		HashMap<String, Double> prob_org=terrible_converter(freq_org);
-		HashMap<String, Double> prob_indv=terrible_converter(freq_indv);
+		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 2, .5);
+		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 2, .5);
+		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 2, .5);
+		HashMap<String, Double> prob_org=terrible_converter(freq_org, 2, .5);
+		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 2, .5);
     try {
       FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_weapon_adv.ser");
       ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -308,33 +308,87 @@ public class Term_Selecter_adv {
 		}
 	}
 
-	private static HashMap<String, Double> terrible_converter(HashMap<String, Freq_tuple> input ){
+	private static HashMap<String, Double> terrible_converter(HashMap<String, Freq_tuple> input, int cut_off, double min_val){
 		HashMap<String, Double> prob=new HashMap<>();
 		for(String s: input.keySet()){
-			prob.put(s, input.get(s).get_doub());
+			prob.put(s, input.get(s).get_doub(cut_off, min_val));
 		}
 		//System.out.println(prob.size()+"   "+input.size());
 		return prob;
 	}
 
-  private static double[]  feature_maker(ArrayList<Word> noun_phrase){
-    int size_of=dict.size();
-    double[] output=new double[size_of];
-    for(Word w:noun_phrase){
-      if(dict.containsKey(w.word())){
-        output[dict.get(w.word())]=1;
-      }
-    }
-    return output;
-    /*
-    for(int i=0; i<size_of; i++){
-      if(output[i]==0){
-        output[i+size_of]=1;
-      }
-    }
-    */
-  }
 
+	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
+		for(String[] ans: ans_){
+			boolean seq_found=false;
+			int index_in_seq=0;
+			int ans_start_loc=-1;
+			int ans_end_loc=-1;
+			int index=-1;
+			for(HasWord word: sentence){
+				index++;
+				if(ans[index_in_seq].equals(word.word())){
+					if(ans_start_loc==-1){
+						ans_start_loc=index;
+					}
+					index_in_seq=index_in_seq+1;
+					if(index_in_seq>=ans.length){
+						ans_end_loc=index;
+							seq_found=true;
+							break;
+					}
+				}
+				else if(ans[0].equals(word.word())){
+					ans_start_loc=index;
+					index_in_seq=1;
+					if(index_in_seq>=ans.length){
+						ans_end_loc=index;
+							seq_found=true;
+							break;
+					}
+				}
+				else{
+					ans_start_loc=-1;
+					index_in_seq=0;
+				}
+			}
+			index=-1;
+			if(seq_found){
+				for(HasWord word: sentence){
+					index++;
+					if(index<=ans_end_loc && index>=ans_start_loc){
+						if(freq.containsKey(word.word())){
+							freq.get(word.word()).inc_both();
+						}
+						else{
+							freq.put(word.word(), new Freq_tuple(1, 1));
+						}
+					}
+					else{
+						if(freq.containsKey(word.word())){
+							freq.get(word.word()).inc_de();
+						}
+						else{
+							freq.put(word.word(), new Freq_tuple(0, 1));
+						}
+					}
+				}
+			}
+			else{
+				/*
+				for(HasWord word: sentence){
+					if(freq.containsKey(word.word())){
+						freq.get(word.word()).inc_de();
+					}
+					else{
+						freq.put(word.word(), new Freq_tuple(0, 1));
+					}
+				}
+				*/
+			}
+		}
+	}
+/*
 	private static void update_freq_count(HashMap<String, Freq_tuple> freq, List<HasWord> sentence, ArrayList<String[]> ans_){
 		for(String[] ans: ans_){
 			boolean seq_found=false;
@@ -403,5 +457,6 @@ public class Term_Selecter_adv {
 			}
 		}
 	}
+	*/
 
 }

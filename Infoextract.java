@@ -60,6 +60,13 @@ public class Infoextract {
   private static HashMap<String, Double> prob_indv=null;
 
 
+  private static HashMap<String, Double> term_weap=null;
+  private static HashMap<String, Double> term_tar=null;
+  private static HashMap<String, Double> term_vic=null;
+  private static HashMap<String, Double> term_org=null;
+  private static HashMap<String, Double> term_indv=null;
+
+
   private static   HashMap<String, Double> prob_attack=null;
   private static   HashMap<String, Double> prob_arson=null;
   private static   HashMap<String, Double> prob_bombing=null;
@@ -106,6 +113,40 @@ public class Infoextract {
 			 in.close();
 			 in_file.close();
 
+/////////////////////////////////////////////////
+
+			 in_file = new FileInputStream("./term_terms_adv/term_indv_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_indv = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+			 in_file = new FileInputStream("./term_terms_adv/term_org_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_org = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+			 in_file = new FileInputStream("./term_terms_adv/term_weapon_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_weap = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+			 in_file = new FileInputStream("./term_terms_adv/term_tar_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_tar = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+			 in_file = new FileInputStream("./term_terms_adv/term_vic_adv.ser");
+			 in = new ObjectInputStream(in_file);
+			 term_vic = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+
+//////////////////////////////////////////////////////
 
 			 in_file = new FileInputStream("./sentence_probs_adv/prob_robbery.ser");
 			 in = new ObjectInputStream(in_file);
@@ -208,7 +249,7 @@ public class Infoextract {
 						else
 							article_with_case += next_chunk + " ";
 					}
-					
+
 				Reader reader = new StringReader(article_with_case);
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 
@@ -357,7 +398,7 @@ public class Infoextract {
 				System.out.println(robbery);
 				System.out.println(max);
 				*/
-				
+
 				noun_phrase_extract(noun_phrases_tar, tag_trees_tar);
 				noun_phrase_extract(noun_phrases_vic, tag_trees_vic);
 				noun_phrase_extract(noun_phrases_org, tag_trees_org);
@@ -377,11 +418,11 @@ public class Infoextract {
 				ArrayList<String> targets = new ArrayList<String>();
 				ArrayList<String> victims = new ArrayList<String>();
 
-				ans_extract(noun_phrases_tar, targets);
-				ans_extract(noun_phrases_vic, victims);
-				ans_extract(noun_phrases_org, organizations);
-				ans_extract(noun_phrases_weap, weapons);
-				ans_extract(noun_phrases_indv, individuals);
+				ans_extract(noun_phrases_tar, targets, term_tar);
+				ans_extract(noun_phrases_vic, victims, term_vic);
+				ans_extract(noun_phrases_org, organizations, term_org);
+				ans_extract(noun_phrases_weap, weapons, term_weap);
+				ans_extract(noun_phrases_indv, individuals, term_indv);
 
 				// OUTPUT THE STUFFS
 				writer.println("ID:             " + ID);
@@ -460,27 +501,40 @@ public class Infoextract {
 		return output;
 	}
 
-	private static void ans_extract(ArrayList<ArrayList<Word>> noun_phrases, ArrayList<String> ans){
-		
+	private static void ans_extract(ArrayList<ArrayList<Word>> noun_phrases, ArrayList<String> ans, HashMap<String, Double> term_prune){
+
 		ArrayList<String> months = new ArrayList<String>(Arrays.asList("JAN", "FEB", "MARCH", "MAR", "APRIL", "MAY", "JUNE", "JUN", "JULY", "JUL", "AUG", "AUGUST", "SEP", "SEPT", "SEPTEMBER", "OCT", "OCTOBER", "NOV", "NOVEMBER", "DEC", "DECEMBER"));
 		ArrayList<String> weekdays = new ArrayList<String>(Arrays.asList("MON", "MONDAY", "TUES", "TUE", "TUESDAY", "WED", "WEDNESDAY", "THUR", "THURS", "THURSDAY", "FRI", "FRIDAY", "SAT", "SATURDAY", "SUN", "SUNDAY"));
-		
+
 		for(ArrayList<Word> np : noun_phrases){
 			String noun_phrase="";
 			for(Word w: np){
-				
-				if(weekdays.contains(w.word())){
+				if(term_prune.containsKey(w.word().toUpperCase())){
+					if(term_prune.get(w.word().toUpperCase())>0.0){
+						//carry on
+					}
+					else{
+						noun_phrase="";
+						break;
+					}
+				}
+				else{
+					noun_phrase="";
+					break;
+				}
+
+				if(weekdays.contains(w.word().toUpperCase())){
 					noun_phrase = "";
 					break;
 				}
-				if(months.contains(w.word())){
+				if(months.contains(w.word().toUpperCase())){
 					noun_phrase = "";
 					break;
-				}		
-				
+				}
+
 				if(w.word().equals("'s"))
 					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "'S ";
-				else	
+				else
 					noun_phrase+= w.word().toUpperCase() + " ";
 			}
 
@@ -489,15 +543,16 @@ public class Infoextract {
 
 			if(noun_phrase.contains("-LRB-") || noun_phrase.contains("-RRB-"))
 				continue;
-			
+
 			if(noun_phrase.contains(","))
 				continue;
 
 			//data = feature_maker(np);
 			if(!noun_phrase.equals("")){
 				//if(weapons_winnow.predict(data) == 1)
-				if(!ans.contains(noun_phrase))
+				if(!ans.contains(noun_phrase)){
 					ans.add(noun_phrase);
+				}
 			}
 		}
 	}
@@ -525,7 +580,7 @@ public class Infoextract {
 												String first_word = add_words.get(0).word().toUpperCase();
 												if(first_words.contains(first_word))
 													add_words.remove(0);
-												
+
 												try{
 													int temp_int = Integer.parseInt(first_word);
 													add_words.remove(0);}

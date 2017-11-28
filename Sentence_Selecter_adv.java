@@ -386,18 +386,6 @@ public class Sentence_Selecter_adv {
 			}
 			index=-1;
 			if(seq_found){
-				/*
-				for(HasWord word: sentence){
-					index++;
-					if(index<ans_start_loc){
-						if(ignore_words.contains(word.word())){
-							index--;
-							ans_start_loc--;
-							ans_end_loc--;
-						}
-					}
-				}
-				*/
 				index=-1;
 				for(HasWord word: sentence){
 					index++;

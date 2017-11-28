@@ -59,6 +59,13 @@ public class Infoextract {
   private static HashMap<String, Double> prob_org=null;
   private static HashMap<String, Double> prob_indv=null;
 
+
+  private static   HashMap<String, Double> prob_attack=null;
+  private static   HashMap<String, Double> prob_arson=null;
+  private static   HashMap<String, Double> prob_bombing=null;
+  private static   HashMap<String, Double> prob_kidnapping=null;
+  private static   HashMap<String, Double> prob_robbery=null;
+
 	public static void main(String[] args) {
 
 		try {
@@ -98,6 +105,38 @@ public class Infoextract {
 			 prob_vic = (HashMap<String, Double>) in.readObject();
 			 in.close();
 			 in_file.close();
+
+
+			 in_file = new FileInputStream("./sentence_probs_adv/prob_robbery.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_robbery = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs_adv/prob_kidnapping.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_kidnapping = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs_adv/prob_attack.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_attack = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs_adv/prob_arson.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_arson = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
+       in_file = new FileInputStream("./sentence_probs_adv/prob_bombing.ser");
+			 in = new ObjectInputStream(in_file);
+			 prob_bombing = (HashMap<String, Double>) in.readObject();
+			 in.close();
+			 in_file.close();
+
 		} catch (IOException e) {
 			 e.printStackTrace();
 			 return;
@@ -184,14 +223,66 @@ public class Infoextract {
 				ArrayList<Tree> tag_trees_indv = new ArrayList<Tree>();
 				ArrayList<ArrayList<Word>> noun_phrases_indv=new ArrayList<ArrayList<Word>>();
 
+
+				int arson=0;
+				int attack=0;
+				int bombing=0;
+				int kidnapping=0;
+				int robbery=0;
+				int max=0;
 				for (List<HasWord> sentence : dp){
 
-					boolean no_attempt_tar=true;
+					boolean no_attempt_tar=true;//these are named poorly. basically we go through each word in the sentence, check if we think it's likely
 					boolean no_attempt_vic=true;
 					boolean no_attempt_org=true;
 					boolean no_attempt_indv=true;
 					boolean no_attempt_weap=true;
           for (HasWord word: sentence){
+
+						if(prob_arson.containsKey(word.word().toUpperCase())){
+							if(0.0<prob_arson.get(word.word().toUpperCase())){
+								arson++;
+								if(arson>max){
+									max=arson;
+								}
+							}
+						}
+						if(prob_bombing.containsKey(word.word().toUpperCase())){
+							if(0.0<prob_bombing.get(word.word().toUpperCase())){
+								bombing++;
+								if(bombing>max){
+									max=bombing;
+								}
+							}
+						}
+						if(prob_kidnapping.containsKey(word.word().toUpperCase())){
+							if(0.0<prob_kidnapping.get(word.word().toUpperCase())){
+								kidnapping++;
+								if(kidnapping>max){
+									max=kidnapping;
+								}
+							}
+						}
+						if(prob_attack.containsKey(word.word().toUpperCase())){
+							if(0.0<prob_attack.get(word.word().toUpperCase())){
+								attack++;
+								if(attack>max){
+									max=attack;
+								}
+							}
+						}
+						if(prob_robbery.containsKey(word.word().toUpperCase())){
+							if(0.0<prob_robbery.get(word.word().toUpperCase())){
+								robbery++;
+								if(robbery>max){
+									max=robbery;
+								}
+							}
+						}
+
+
+
+
             if(prob_tar.containsKey(word.word().toUpperCase())){
               if(0.0<prob_tar.get(word.word().toUpperCase())){
 			        	//update_hit_count(freq_tar, sentence, ans_tar, word.word());
@@ -240,6 +331,22 @@ public class Infoextract {
 						tag_trees_indv.add(temp_tree);
 					}
 				}
+				String ans_inc="ATTACK";
+				if(attack==max){
+					ans_inc="ATTACK";
+				}
+				else if(arson==max){
+					ans_inc="ARSON";
+				}
+				else if(bombing==max){
+					ans_inc="BOMBING";
+				}
+				else if(kidnapping==max){
+					ans_inc="KIDNAPPING";
+				}
+				else if(robbery==max){
+					ans_inc="ROBBERY";
+				}
 
 
 				noun_phrase_extract(noun_phrases_tar, tag_trees_tar);
@@ -274,7 +381,7 @@ public class Infoextract {
 
 				// OUTPUT THE STUFFS
 				writer.println("ID:             " + ID);
-				writer.println("INCIDENT:       " + "ATTACK");
+				writer.println("INCIDENT:       " + ans_inc);
 
 				if(weapons.size() == 0)
 					writer.println("WEAPON:         " + "-");
@@ -360,7 +467,7 @@ public class Infoextract {
 
 			if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))
 				continue;
-			
+
 			if(noun_phrase.contains("-LRB-") || noun_phrase.contains("-RRB-"))
 				continue;
 
@@ -390,7 +497,7 @@ public class Infoextract {
 									if(fuuu!=null){
 										ArrayList<Word> add_words = sub.yieldWords();
 										fuuu.removeChild(fuuu.objectIndexOf(sub));
-										if(add_words.size() == 1 && !ignore_words.contains(add_words.get(0).word().toUpperCase())){
+										if(add_words.size() == 1 && ignore_words.contains(add_words.get(0).word().toUpperCase())){
 										}
 										else{
 											if(!noun_phrases.contains(add_words)){
@@ -402,8 +509,8 @@ public class Infoextract {
 													if(add_words.size() == 1)
 														continue;
 													if(months.contains(add_words.get(1).word().toUpperCase()))
-														continue;													
-													}													
+														continue;
+													}
 												catch(Exception e){}
 												noun_phrases.add(add_words);
 											}

@@ -256,11 +256,11 @@ public class Term_Selecter_adv {
 		}
 
 		//SAVE ALL THE THINGS
-		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 2, .5);
-		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 2, .5);
-		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 2, .5);
-		HashMap<String, Double> prob_org=terrible_converter(freq_org, 2, .5);
-		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 2, .5);
+		HashMap<String, Double> prob_weapon=terrible_converter(freq_weapon, 2, .1);
+		HashMap<String, Double> prob_vic=terrible_converter(freq_vic, 2, .1);
+		HashMap<String, Double> prob_tar=terrible_converter(freq_tar, 2, .1);
+		HashMap<String, Double> prob_org=terrible_converter(freq_org, 2, .1);
+		HashMap<String, Double> prob_indv=terrible_converter(freq_indv, 2, .1);
     try {
       FileOutputStream fileOut = new FileOutputStream("./term_terms_adv/term_weapon_adv.ser");
       ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -327,7 +327,7 @@ public class Term_Selecter_adv {
 			int index=-1;
 			for(HasWord word: sentence){
 				index++;
-				if(ans[index_in_seq].equals(word.word())){
+				if(ans[index_in_seq].equals(word.word().toUpperCase())){
 					if(ans_start_loc==-1){
 						ans_start_loc=index;
 					}
@@ -338,13 +338,13 @@ public class Term_Selecter_adv {
 							break;
 					}
 				}
-				else if(ans[0].equals(word.word())){
+				else if(ans[0].equals(word.word().toUpperCase())){
 					ans_start_loc=index;
 					index_in_seq=1;
 					if(index_in_seq>=ans.length){
 						ans_end_loc=index;
-							seq_found=true;
-							break;
+						seq_found=true;
+						break;
 					}
 				}
 				else{
@@ -357,19 +357,19 @@ public class Term_Selecter_adv {
 				for(HasWord word: sentence){
 					index++;
 					if(index<=ans_end_loc && index>=ans_start_loc){
-						if(freq.containsKey(word.word())){
-							freq.get(word.word()).inc_both();
+						if(freq.containsKey(word.word().toUpperCase())){
+							freq.get(word.word().toUpperCase()).inc_both();
 						}
 						else{
-							freq.put(word.word(), new Freq_tuple(1, 1));
+							freq.put(word.word().toUpperCase(), new Freq_tuple(1, 1));
 						}
 					}
 					else{
-						if(freq.containsKey(word.word())){
-							freq.get(word.word()).inc_de();
+						if(freq.containsKey(word.word().toUpperCase())){
+							freq.get(word.word().toUpperCase()).inc_de();
 						}
 						else{
-							freq.put(word.word(), new Freq_tuple(0, 1));
+							freq.put(word.word().toUpperCase(), new Freq_tuple(0, 1));
 						}
 					}
 				}

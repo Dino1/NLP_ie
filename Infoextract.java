@@ -508,19 +508,21 @@ public class Infoextract {
 
 		for(ArrayList<Word> np : noun_phrases){
 			String noun_phrase="";
+			boolean at_least_one=false;
 			for(Word w: np){
 				if(term_prune.containsKey(w.word().toUpperCase())){
 					if(term_prune.get(w.word().toUpperCase())>0.0){
 						//carry on
+						at_least_one=true;
 					}
 					else{
-						noun_phrase="";
-						break;
+						//noun_phrase="";
+						//break;
 					}
 				}
 				else{
-					noun_phrase="";
-					break;
+					//noun_phrase="";
+					//break;
 				}
 
 				if(weekdays.contains(w.word().toUpperCase())){
@@ -536,6 +538,12 @@ public class Infoextract {
 					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "'S ";
 				else
 					noun_phrase+= w.word().toUpperCase() + " ";
+			}
+			if(at_least_one){
+
+			}
+			else{
+				noun_phrase="";
 			}
 
 			if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))

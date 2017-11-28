@@ -169,7 +169,7 @@ public class Infoextract {
 						else
 							article_with_case += next_chunk + " ";
 					}
-
+					
 				Reader reader = new StringReader(article_with_case);
 				DocumentPreprocessor dp = new DocumentPreprocessor(reader);
 
@@ -223,20 +223,21 @@ public class Infoextract {
 							}
 						}
           }
+					Tree temp_tree = parsnip.apply(tagger.tagSentence(sentence));
 					if(no_attempt_tar==false){
-						tag_trees_tar.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_tar.add(temp_tree);
 					}
 					if(no_attempt_vic==false){
-						tag_trees_vic.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_vic.add(temp_tree);
 					}
 					if(no_attempt_org==false){
-						tag_trees_org.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_org.add(temp_tree);
 					}
 					if(no_attempt_weap==false){
-						tag_trees_weap.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_weap.add(temp_tree);
 					}
 					if(no_attempt_indv==false){
-						tag_trees_indv.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_indv.add(temp_tree);
 					}
 				}
 
@@ -352,7 +353,10 @@ public class Infoextract {
 		for(ArrayList<Word> np : noun_phrases){
 			String noun_phrase="";
 			for(Word w: np)
-				noun_phrase+= w.word().toUpperCase() + " ";
+				if(w.word().equals("'s"))
+					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "'S ";
+				else
+					noun_phrase+= w.word().toUpperCase() + " ";
 
 			if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))
 				continue;

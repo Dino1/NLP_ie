@@ -1,2 +1,8 @@
 
 testset1-input.txt.template.trace
+testset1-input.txt.template
+*.trace
+testset1-input.txt.template.trace
+input.txt.template
+Input.txt.template
+Infoextract.class

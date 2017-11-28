@@ -260,11 +260,11 @@ public class Sentence_Selecter_adv {
 				ArrayList<String> ignore_indv = new ArrayList<String>(Arrays.asList(""));
 
 				for (List<HasWord> sentence : dp){
-					update_freq_count(freq_weapon, sentence, ans_weapon, ignore_weap, 5);
-					update_freq_count(freq_vic, sentence, ans_vic, ignore_vic, 5);
-					update_freq_count(freq_tar, sentence, ans_tar, ignore_tar, 5);
-					update_freq_count(freq_org, sentence, ans_org, ignore_org, 5);
-					update_freq_count(freq_indv, sentence, ans_indv, ignore_indv, 5);
+					update_freq_count(freq_weapon, sentence, ans_weapon, ignore_weap, 108);
+					update_freq_count(freq_vic, sentence, ans_vic, ignore_vic, 108);
+					update_freq_count(freq_tar, sentence, ans_tar, ignore_tar, 108);
+					update_freq_count(freq_org, sentence, ans_org, ignore_org, 108);
+					update_freq_count(freq_indv, sentence, ans_indv, ignore_indv, 108);
 				}
 
 

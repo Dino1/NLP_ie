@@ -314,21 +314,20 @@ public class Infoextract {
 							}
 						}
           }
-					Tree temp_tree = parsnip.apply(tagger.tagSentence(sentence));
 					if(no_attempt_tar==false){
-						tag_trees_tar.add(temp_tree);
+						tag_trees_tar.add(parsnip.apply(tagger.tagSentence(sentence)));
 					}
 					if(no_attempt_vic==false){
-						tag_trees_vic.add(temp_tree);
+						tag_trees_vic.add(parsnip.apply(tagger.tagSentence(sentence)));
 					}
 					if(no_attempt_org==false){
-						tag_trees_org.add(temp_tree);
+						tag_trees_org.add(parsnip.apply(tagger.tagSentence(sentence)));
 					}
 					if(no_attempt_weap==false){
-						tag_trees_weap.add(temp_tree);
+						tag_trees_weap.add(parsnip.apply(tagger.tagSentence(sentence)));
 					}
 					if(no_attempt_indv==false){
-						tag_trees_indv.add(temp_tree);
+						tag_trees_indv.add(parsnip.apply(tagger.tagSentence(sentence)));
 					}
 				}
 				String ans_inc="ATTACK";
@@ -373,11 +372,6 @@ public class Infoextract {
 				ans_extract(noun_phrases_org, organizations);
 				ans_extract(noun_phrases_weap, weapons);
 				ans_extract(noun_phrases_indv, individuals);
-
-
-				// DO SOME MAGICAL WORK TO IDENTIFY WHICH NOUN PHRASES ARE ACTUALLY DUPLICATES
-
-				// ...
 
 				// OUTPUT THE STUFFS
 				writer.println("ID:             " + ID);
@@ -457,13 +451,28 @@ public class Infoextract {
 	}
 
 	private static void ans_extract(ArrayList<ArrayList<Word>> noun_phrases, ArrayList<String> ans){
+		
+		ArrayList<String> months = new ArrayList<String>(Arrays.asList("JAN", "FEB", "MARCH", "MAR", "APRIL", "MAY", "JUNE", "JUN", "JULY", "JUL", "AUG", "AUGUST", "SEP", "SEPT", "SEPTEMBER", "OCT", "OCTOBER", "NOV", "NOVEMBER", "DEC", "DECEMBER"));
+		ArrayList<String> weekdays = new ArrayList<String>(Arrays.asList("MON", "MONDAY", "TUES", "TUE", "TUESDAY", "WED", "WEDNESDAY", "THUR", "THURS", "THURSDAY", "FRI", "FRIDAY", "SAT", "SATURDAY", "SUN", "SUNDAY"));
+		
 		for(ArrayList<Word> np : noun_phrases){
 			String noun_phrase="";
-			for(Word w: np)
+			for(Word w: np){
+				
+				if(weekdays.contains(w.word())){
+					noun_phrase = "";
+					break;
+				}
+				if(months.contains(w.word())){
+					noun_phrase = "";
+					break;
+				}		
+				
 				if(w.word().equals("'s"))
 					noun_phrase = noun_phrase.substring(0, noun_phrase.length() - 1) + "'S ";
-				else
+				else	
 					noun_phrase+= w.word().toUpperCase() + " ";
+			}
 
 			if(noun_phrase.contains("-LSB-") || noun_phrase.contains("-RSB-"))
 				continue;
@@ -482,9 +491,8 @@ public class Infoextract {
 
 	private static void noun_phrase_extract( ArrayList<ArrayList<Word>> noun_phrases, ArrayList<Tree> tag_trees){
 
-		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("THIS","AND", "THE", "OF", "A", "IN", "", "-"));
-		ArrayList<String> first_words = new ArrayList<String>(Arrays.asList("THE", "A", "AN", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "MONSIGNOR", "MSGR"));
-		ArrayList<String> months = new ArrayList<String>(Arrays.asList("JAN", "FEB", "MARCH", "MAR", "APRIL", "MAY", "JUNE", "JUN", "JULY", "JUL", "AUG", "AUGUST", "SEP", "SEPT", "SEPTEMBER", "OCT", "OCTOBER", "NOV", "NOVEMBER", "DEC", "DECEMBER"));
+		ArrayList<String> ignore_words = new ArrayList<String>(Arrays.asList("END", "HE", "SHE", "ME", "YOU", "I", "IT", "THEY", "THEM", "THERE", "THAT", "THIS","AND", "THE", "OF", "A", "IN", "", "-"));
+		ArrayList<String> first_words = new ArrayList<String>(Arrays.asList("DR", "SOME", "THE", "A", "AN", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "MONSIGNOR", "MSGR"));
 
 		for(Tree t : tag_trees){
 			for(Tree sub: t){
@@ -504,13 +512,10 @@ public class Infoextract {
 												String first_word = add_words.get(0).word().toUpperCase();
 												if(first_words.contains(first_word))
 													add_words.remove(0);
+												
 												try{
-													int first_int = Integer.parseInt(first_word);
-													if(add_words.size() == 1)
-														continue;
-													if(months.contains(add_words.get(1).word().toUpperCase()))
-														continue;
-													}
+													int temp_int = Integer.parseInt(first_word);
+													add_words.remove(0);}
 												catch(Exception e){}
 												noun_phrases.add(add_words);
 											}

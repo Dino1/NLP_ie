@@ -74,8 +74,8 @@ class Freq_tuple {
 		}
 		return ((double)(numerator))/((double)(denominator));
 	}
-	public boolean worthless(){
-		if((numerator*2)<denominator){
+	public boolean worthless(double thresh){
+		if( (((double)(numerator))/((double)(denominator))) < thresh){
 			return true;
 		}
 		return false;
@@ -196,11 +196,11 @@ public class Infoextract_incident {
 			//input_scanner = new Scanner(new File("input.txt"));
   		//ans_scanner = new Scanner(new File("output.txt"));
 
-			input_scanner = new Scanner(new File("DEV_ALL"));
-      ans_scanner = new Scanner(new File("ANS_ALL"));
+			//input_scanner = new Scanner(new File("DEV_ALL"));
+      //ans_scanner = new Scanner(new File("ANS_ALL"));
 
-			//input_scanner = new Scanner(new File("testset1-input.txt"));
-      //ans_scanner = new Scanner(new File("testset1-anskeys.txt"));
+			input_scanner = new Scanner(new File("testset1-input.txt"));
+      ans_scanner = new Scanner(new File("testset1-anskeys.txt"));
 
   		//input_scanner = new Scanner(new File("DEV-MUC3-0169"));
       //ans_scanner = new Scanner(new File("DEV-MUC3-0169.anskey"));
@@ -418,7 +418,7 @@ public class Infoextract_incident {
 		}
 		System.out.println("arson");
 		for(String s: freq_arson.keySet()){
-			if(freq_arson.get(s).worthless()){
+			if(freq_arson.get(s).worthless(.5)){
 				System.out.print("\""+s+"\", ");
 			}
 		}
@@ -426,21 +426,21 @@ public class Infoextract_incident {
 		System.out.println("kidnapping");
 		for(String s: freq_kidnapping.keySet()){
 			//System.out.println(s);
-			if(freq_kidnapping.get(s).worthless()){
+			if(freq_kidnapping.get(s).worthless(.5)){
 				System.out.print("\""+s+"\", ");
 			}
 		}
 		System.out.println();
 		System.out.println("robbery");
 		for(String s: freq_robbery.keySet()){
-			if(freq_robbery.get(s).worthless()){
+			if(freq_robbery.get(s).worthless(.5)){
 				System.out.print("\""+s+"\", ");
 			}
 		}
 		System.out.println();
 		System.out.println("bombing");
 		for(String s: freq_bombing.keySet()){
-			if(freq_bombing.get(s).worthless()){
+			if(freq_bombing.get(s).worthless(.5)){
 				System.out.print("\""+s+"\", ");
 			}
 		}
@@ -448,7 +448,7 @@ public class Infoextract_incident {
 		System.out.println("attack");
 		for(String s: freq_attack.keySet()){
 			//System.out.println(s);
-			if(freq_attack.get(s).worthless()){
+			if(freq_attack.get(s).worthless(.75)){
 				System.out.print("\""+s+"\", ");
 			}
 		}

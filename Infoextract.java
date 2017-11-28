@@ -346,8 +346,17 @@ public class Infoextract {
 				else if(robbery==max){
 					ans_inc="ROBBERY";
 				}
-
-
+				/*
+				System.out.println();
+				System.out.println(ans_inc);
+				System.out.println(attack);
+				System.out.println(arson);
+				System.out.println(bombing);
+				System.out.println(kidnapping);
+				System.out.println(robbery);
+				System.out.println(max);
+				*/
+				
 				noun_phrase_extract(noun_phrases_tar, tag_trees_tar);
 				noun_phrase_extract(noun_phrases_vic, tag_trees_vic);
 				noun_phrase_extract(noun_phrases_org, tag_trees_org);

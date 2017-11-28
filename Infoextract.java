@@ -314,20 +314,21 @@ public class Infoextract {
 							}
 						}
           }
+					Tree temp_tree = parsnip.apply(tagger.tagSentence(sentence));
 					if(no_attempt_tar==false){
-						tag_trees_tar.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_tar.add(temp_tree);
 					}
 					if(no_attempt_vic==false){
-						tag_trees_vic.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_vic.add(temp_tree);
 					}
 					if(no_attempt_org==false){
-						tag_trees_org.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_org.add(temp_tree);
 					}
 					if(no_attempt_weap==false){
-						tag_trees_weap.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_weap.add(temp_tree);
 					}
 					if(no_attempt_indv==false){
-						tag_trees_indv.add(parsnip.apply(tagger.tagSentence(sentence)));
+						tag_trees_indv.add(temp_tree);
 					}
 				}
 				String ans_inc="ATTACK";
@@ -478,6 +479,9 @@ public class Infoextract {
 				continue;
 
 			if(noun_phrase.contains("-LRB-") || noun_phrase.contains("-RRB-"))
+				continue;
+			
+			if(noun_phrase.contains(","))
 				continue;
 
 			//data = feature_maker(np);

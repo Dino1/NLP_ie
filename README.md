@@ -1,5 +1,5 @@
 TEAM: Rowdy Raccoons
-MEMBERS: Jacob Luke, Bernard Serbinowski
+MEMBERS: Jacob Luke, Serena Serafina Serbinowska
 
 NLP Projct Final Evaluation
 
